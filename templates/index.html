@@ -602,8 +602,8 @@
             }
             
             const secIds = codes.map(code => getSecId(code)).join(',');
-            // 使用后端代理API解决CORS跨域问题
-            const API_URL = `/api/proxy-eastmoney-stock-data?secids=${secIds}`;
+            // 直接调用东方财富API，不经过代理
+            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14,f34&fltt=2&secids=${secIds}`;
             console.log('Fetching real-time data from:', API_URL);
             
             try {
