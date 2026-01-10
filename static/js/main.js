@@ -86,6 +86,10 @@ function filterByDate(dateValue) {
             // 渲染数据
             Array.prototype.forEach.call(data, function(stock) {
                     var row = document.createElement('tr');
+                    row.style.cursor = 'pointer';
+                    row.onclick = function() {
+                        linkToTongDaXin(stock.code_part);
+                    };
                     var link = 'https://xuangutong.com.cn/stock/' + stock.code_part + '.' + stock.market.toUpperCase();
                     var codeClass = stock.code_part.startsWith('3') ? 'orange-code' : '';
                     var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
