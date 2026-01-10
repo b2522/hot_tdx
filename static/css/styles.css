@@ -1,0 +1,749 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-color: #1e1e1e;
+    --container-bg: #2d2d30;
+    --text-color: #cccccc;
+    --header-color: #cccccc;
+    --border-color: #3f3f46;
+    --table-header-bg: #333333;
+    --table-row-even: #3a3a3a;
+    --table-row-hover: #444444;
+    --selected-row: #3a506b;
+    --link-color: #4d90fe;
+    --footer-color: #888888;
+}
+
+body {
+    font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+/* 主容器布局 - 使用flex布局 */
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    background-color: var(--container-bg);
+    padding: 8px;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    font-size: 12px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    gap: 5px;
+}
+
+/* 主表格容器 - 留出侧边栏空间 */
+.table-container {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    border-radius: 10px;
+    background-color: var(--container-bg);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    border: 1px solid var(--border-color);
+}
+
+/* 确保表格宽度填充满容器 */
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+/* 确保表格容器不会限制表格宽度 */
+.table-container {
+    overflow-x: auto !important;
+}
+
+/* 重置所有可能影响列宽的样式 */
+.table-container table th,
+.table-container table td {
+    box-sizing: border-box !important;
+}
+
+/* 左侧表格表头样式 */
+.table-container th {
+    background-color: var(--table-header-bg);
+    color: white;
+    font-weight: normal;
+    font-size: 14px;
+    padding: 10px 8px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+/* 右侧题材统计表样式 */
+.sidebar {
+    position: sticky;
+    top: 0;
+    width: 190px;
+    max-height: calc(100vh - 40px);
+    display: block;
+    opacity: 1;
+    margin: 0;
+    padding: 0;
+}
+
+/* 右侧题材统计表容器样式 */
+.plate-stats-container {
+    margin: 0;
+    padding: 0;
+}
+
+/* 右侧题材统计表内容样式 */
+.stats-content {
+    margin: 0;
+    padding: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 表格单元格样式 */
+.table-container td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* 表格行样式 */
+.table-container tr:nth-child(even) {
+    background-color: var(--table-row-even);
+}
+
+.table-container tr:hover {
+    background-color: var(--table-row-hover);
+}
+
+/* 调整列宽 */
+th:nth-child(1), td:nth-child(1) {
+    width: 100px;
+    white-space: nowrap;
+    text-align: center;
+    overflow: visible;
+    text-overflow: ellipsis;
+}
+
+th:nth-child(2), td:nth-child(2) {
+    width: 100px;
+    text-align: center;
+    padding: 0;
+    white-space: nowrap;
+}
+
+th:nth-child(3), td:nth-child(3) {
+    width: 70px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+
+th:nth-child(4), td:nth-child(4) {
+    width: 70px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+
+/* 分时图容器样式 */
+.time-chart {
+    width: 100px;
+    height: 50px;
+    margin: 0 auto;
+    display: block;
+}
+
+/* 确保分时图列的单元格有足够的高度 */
+td:nth-child(2) {
+    height: 50px;
+    padding: 0;
+}
+
+th:nth-child(7), td:nth-child(7) {
+    width: 80px;
+    white-space: nowrap;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+th:nth-child(8) {
+    text-align: center;
+    width: auto;
+}
+
+td:nth-child(8) {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+    text-align: left;
+    width: auto;
+}
+
+th:nth-child(9), td:nth-child(9) {
+    width: 90px;
+    min-width: 90px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    text-align: center;
+}
+
+th:nth-child(10) {
+    width: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+    text-align: center;
+    font-size: 14px;
+}
+
+td:nth-child(10) {
+    width: auto;
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+    text-align: left;
+    font-size: 14px;
+}
+
+/* 最具体的选择器确保样式优先级 */
+#stockTableBody tr td:last-child,
+#stockTableBody tr td:nth-child(11),
+#stockTableBody tr td.plate-column,
+.table-container table thead tr th:last-child,
+.table-container table thead tr th:nth-child(11),
+.table-container table thead tr th.plate-column {
+    width: 120px !important;
+    min-width: 120px !important;
+    max-width: 120px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-all !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    padding: 4px !important;
+    font-size: 14px !important;
+}
+
+/* 确保表格单元格内容格式正确 */
+/* 为大多数列设置省略号样式，但排除需要换行的列 */
+th:not(:nth-child(8)):not(:nth-child(9)):not(:nth-child(10)):not(:nth-child(11)), 
+td:not(:nth-child(8)):not(:nth-child(9)):not(:nth-child(10)):not(:nth-child(11)) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 隐藏代码列和市场列 */
+th:nth-child(5), td:nth-child(5),
+th:nth-child(6), td:nth-child(6) {
+    display: none;
+}
+
+/* 排序表头样式 */
+th.sortable {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+th.sortable::after {
+    content: '▼';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+}
+
+th.sortable.sorted::after {
+    color: white;
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* 3开头股票代码显示为橙色 */
+.orange-code {
+    color: #FF7F00;
+}
+
+.stock-name-link.blue-text {
+    color: #1E90FF !important;
+}
+
+.stock-name-link.orange-text {
+    color: #FF7F00 !important;
+}
+
+/* 表格内联样式优化 */
+.stock-name-link {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.no-data {
+    text-align: center;
+    padding: 80px;
+    color: var(--text-color);
+    font-size: 12px;
+}
+
+.date-info {
+    background-color: var(--container-bg);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+/* 几天几板样式 */
+.days-boards-tag {
+    color: rgb(255, 255, 255);
+    background: rgb(255, 90, 81);
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 0px 8px;
+    display: inline-block;
+}
+
+.filter-input {
+    margin: 0 auto;
+    display: block;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    text-align: center;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    width: 100%;
+    max-width: 150px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+/* 调整日期选择器的宽度 */
+th:nth-child(10) .filter-input {
+    max-width: 80px;
+    font-size: 12px;
+}
+
+.table-container th.plate-column .filter-input,
+.table-container th:nth-child(11) .filter-input {
+    max-width: 110px !important;
+    font-size: 14px !important;
+    padding: 5px !important;
+    width: 100% !important;
+}
+
+/* 设置搜索框提示文字颜色为白色 */
+.filter-input::placeholder,
+.search-input::placeholder {
+    color: white;
+    opacity: 0.8;
+}
+
+/* 浏览器兼容 */
+.filter-input::-webkit-input-placeholder,
+.search-input::-webkit-input-placeholder {
+    color: white;
+    opacity: 0.8;
+}
+
+.filter-input::-moz-placeholder,
+.search-input::-moz-placeholder {
+    color: white;
+    opacity: 0.8;
+}
+
+.filter-input:-ms-input-placeholder,
+.search-input:-ms-input-placeholder {
+    color: white;
+    opacity: 0.8;
+}
+
+.filter-input:-moz-placeholder,
+.search-input:-moz-placeholder {
+    color: white;
+    opacity: 0.8;
+}
+
+.search-input {
+    padding: 5px;
+    font-size: 12px;
+    width: 100%;
+    text-align: center;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+}
+
+.search-wrapper {
+    display: flex;
+    width: 100%;
+    margin-top: 5px;
+}
+
+/* 详情页分时图样式 */
+.min-chart-full .time-chart {
+    width: 100%;
+    height: 500px;
+}
+
+/* 题材统计表格 */
+.plate-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+/* 右侧题材统计表表头样式 */
+.plate-stats-table th {
+    padding: 6px 8px;
+    text-align: center;
+    background-color: var(--table-header-bg);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+    color: white;
+    font-size: 14px;
+    height: 24px;
+    border: 1px solid var(--border-color);
+}
+
+/* 表格数据行 */
+.plate-stats-table tr:not(:last-child) td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1;
+    height: 28px;
+    border: 1px solid var(--border-color);
+}
+
+/* 表格最后一行 */
+.plate-stats-table tr:last-child td {
+    padding: 6px 8px;
+    line-height: 1;
+    height: 28px;
+    border: 1px solid var(--border-color);
+}
+
+/* 题材名称列 */
+.plate-name {
+    color: var(--text-color);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+/* 数量列 */
+.plate-count {
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: right;
+    width: 30px;
+}
+
+/* 无数据提示 */
+.plate-stats-table .no-data {
+    text-align: center;
+    color: var(--text-color);
+    padding: 20px;
+    font-style: italic;
+}
+
+/* 题材搜索容器样式 */
+.plate-search-container {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--container-bg);
+    margin: 0;
+}
+
+/* 搜索输入框样式 */
+.plate-search-input {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    width: 120px;
+    transition: all 0.3s ease;
+    outline: none;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.plate-search-input:focus {
+    outline: none;
+    border-color: var(--link-color);
+    box-shadow: 0 0 0 2px rgba(77, 144, 254, 0.2);
+}
+
+/* 搜索按钮样式 */
+.plate-search-button {
+    padding: 6px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-weight: 500;
+}
+
+.plate-search-button:hover {
+    background-color: #45a049;
+}
+
+.plate-search-button:active {
+    transform: translateY(1px);
+}
+
+/* 滚动条美化 */
+.stats-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.stats-content::-webkit-scrollbar-track {
+    background: var(--bg-color);
+    border-radius: 3px;
+}
+
+.stats-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.stats-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 响应式设计 - 1200px以下屏幕 */
+@media (max-width: 1200px) {
+    .container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .table-container {
+        width: 100%;
+    }
+    
+    .sidebar {
+        position: relative;
+        width: 100%;
+        margin-top: 0;
+        height: auto;
+        max-height: none;
+    }
+    
+    .stats-content {
+        max-height: none;
+        overflow-y: visible;
+    }
+}
+
+/* 响应式设计 - 768px以下屏幕 */
+@media (max-width: 768px) {
+    .header-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-container {
+        max-width: 100%;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+}
+
+/* 搜索建议样式 */
+.search-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 30px;
+}
+
+.search-input {
+    width: 100%;
+    height: 100%;
+    padding: 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    box-sizing: border-box;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+/* 将搜索建议下拉框放在表格外部 */
+#searchSuggestions {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 3px 3px;
+    background-color: var(--container-bg);
+    z-index: 9999;
+    display: none;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+    /* 确保下拉框不被其他元素裁剪 */
+    clip-path: none;
+    /* 确保下拉框能够覆盖在表格内容上方 */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+.search-suggestion-item {
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.search-suggestion-item:hover {
+    background-color: var(--table-row-hover);
+}
+
+/* 涨跌颜色样式 */
+.price-up {
+    color: #ff4d4f;
+}
+
+.price-down {
+    color: #52c41a;
+}
+
+/* 橙色字体（创业板） */
+.orange-text {
+    color: orange;
+}
+
+/* 蓝色字体（科创板） */
+.blue-text {
+    color: rgba(60, 127, 250, 0.781);
+}
+
+/* 头部容器样式 */
+.header-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.date-selector {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 5px 0;
+}
+
+/* 日期标签样式 */
+.date-label {
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* 市场标签样式 */
+.market-label {
+    font-size: 14px;
+    color: var(--text-color);
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    padding: 5px 0;
+}
+
+.market-label a {
+    color: white !important;
+    text-decoration: none !important;
+    font-size: 14px;
+}
+
+/* 调整日期选择器样式 */
+.date-selector .filter-input {
+    max-width: 150px;
+    font-size: 14px;
+}
+
+/* 自定义日期选择器图标颜色为白色 */
+/* WebKit浏览器 (Chrome, Safari) */
+.date-selector input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Firefox浏览器 */
+.date-selector input[type="date"]::-moz-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* 橙色字体（创业板） */
+.orange-text {
+    color: orange;
+}
+
+/* 蓝色字体（科创板） */
+.blue-text {
+    color: rgba(60, 127, 250, 0.781);
+}
