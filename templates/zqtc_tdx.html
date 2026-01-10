@@ -27,62 +27,68 @@
             padding: 5px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            width: 900px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
         }
         .container {
             width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             background-color: var(--container-bg);
             padding: 8px;
             border-radius: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.3);
             font-size: 12px;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
-        h1 {
-            text-align: center;
-            color: var(--header-color);
-            border-bottom: 1px solid #4CAF50;
-            padding-bottom: 3px;
-            font-size: 16px;
-            margin: 5px 0;
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
         .header-container {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: flex-start;
+            align-items: flex-start;
             margin-bottom: 10px;
-        }
-        .date-title {
-            flex: 1;
-            text-align: left;
-            color: var(--header-color);
-            font-weight: bold;
-            font-size: 13px;
-        }
-        .concept-title {
-            flex: 1;
-            text-align: right;
-            color: red;
-            font-size: 13px;
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .content {
             display: flex;
-            gap: 2px;
+            gap: 20px;
+            width: 100%;
+            box-sizing: border-box;
         }
         .left-panel {
-            width: 280px;
+            width: 160px;
+            padding: 0;
         }
         .right-panel {
             flex: 1;
             min-height: 400px;
             margin-left: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+        .section {
+            margin: 0;
+            padding: 0;
         }
         table {
             border-collapse: collapse;
-            margin: 5px 0;
+            margin: 0;
             font-size: 14px;
-            table-layout: fixed;
+            table-layout: auto;
             width: 100%;
         }
         th, td {
@@ -94,11 +100,16 @@
         th {
             background-color: var(--table-header-bg);
             color: white;
-            font-size: 13px;
+            font-size: 14px;
             padding: 5px 3px;
+            font-weight: normal;
         }
         td.description-column {
             text-align: left;
+            font-size: 14px;
+        }
+        td.price-column, td.change-column {
+            font-size: 14px;
         }
         tr:nth-child(even) {
             background-color: var(--table-row-even);
@@ -126,17 +137,17 @@
         
         .right-table { 
             width: 100%;
+            table-layout: auto;
+            box-sizing: border-box;
         }
-        .code-column { width: 70px; }
-        .name-column { width: 60px; }
-        .price-column { width: 60px; }
-        .change-column { width: 60px; }
-        .time-column { width: 60px; }
-        .amount-column { width: 80px; }
-        .value-column { width: 80px; }
-        .turnover-column { width: 60px; }
-        .boards-column { width: 70px; }
-        .description-column { width: 200px; }
+        .name-column { width: 60px; min-width: 60px; }
+        .boards-column { width: 72px; min-width: 72px; }
+        .price-column { width: 42px; min-width: 42px; }
+        .change-column { width: 42px; min-width: 42px; }
+        .time-column { width: 60px; min-width: 60px; }
+        .amount-column { width: 60px; min-width: 60px; }
+        .value-column { width: 60px; min-width: 60px; }
+        .description-column { flex: 1; min-width: 106px; width: auto; }
         
         .sortable {
             cursor: pointer;
@@ -184,8 +195,11 @@
         .date-selector {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 15px;
             margin-left: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+            padding: 5px 0;
         }
         
         .date-selector input[type="date"] {
@@ -193,7 +207,7 @@
             color: #ccc;
             border: 1px solid #3f3f46;
             padding: 3px 5px;
-            font-size: 12px;
+            font-size: 14px;
             border-radius: 3px;
             cursor: pointer;
         }
@@ -206,7 +220,7 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
         .date-selector input[type="date"] {
             padding: 3px 5px;
@@ -223,6 +237,20 @@
         .date-selector input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
+        }
+        .filter-input {
+            margin: 0 auto;
+            display: block;
+            padding: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            text-align: center;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            width: 100%;
+            max-width: 150px;
+            box-sizing: border-box;
+            font-size: 14px;
         }
         .font-size-control {
             display: flex;
@@ -274,22 +302,21 @@
 </head>
 <body>
     <div class="container">
-        <h1>最强题材解读</h1>
-        
         <div class="header-container">
             <div class="date-selector">
-                <input type="date" id="datePicker" placeholder="年/月/日" onchange="onDateChange()">
+                <span class="market-label" style="font-size: 14px;">
+                    <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
+                </span>
+                <span style="color: var(--text-color); font-size: 14px;"> | </span>
+                <input type="date" id="datePicker" placeholder="选择日期" onchange="onDateChange()" class="filter-input">
+                <span style="color: var(--text-color); font-size: 14px;"> | </span>
+                <a href="/" style="color: white !important; text-decoration: none !important; font-size: 14px;">所有股票同列</a>
+                <span style="color: var(--text-color); font-size: 14px;"> | </span>
+                <a href="/zqtc_tdx" style="color: white !important; text-decoration: none !important; font-size: 14px;">按题材同列</a>
+                <div style="margin-left: auto; color: orange !important; font-size: 14px;">
+                    公众号：别浪 好好学习
+                </div>
             </div>
-            <div style="font-size: 14px; color: #cccccc; margin-left: 10px;">
-               <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>                
-            </div>
-            <div class="font-size-control">
-                <button class="font-size-btn" onclick="changeFontSize(-1)">--</button>
-                <button class="font-size-btn" onclick="changeFontSize(0)">A</button>
-                <button class="font-size-btn" onclick="changeFontSize(1)">++</button>
-                <span class="font-size-display" id="fontSizeDisplay">14px</span>
-            </div>
-            <div class="concept-title" id="detailTitle">请选择题材</div>
         </div>
         
         <div class="content">
@@ -332,9 +359,7 @@
             </div>
         </div>
         
-        <div class="footer">
-            【公众号：别浪 好好学习】 生成时间: <span id="generateTime"></span>
-        </div>
+        
     </div>
     
     <script>
@@ -555,7 +580,7 @@
             
             const secIds = codes.map(code => getSecId(code)).join(',');
             // 使用后端代理API解决CORS跨域问题
-            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
+            const API_URL = `/api/proxy-eastmoney-stock-data?secids=${secIds}`;
             console.log('Fetching real-time data from:', API_URL);
             
             try {
@@ -610,8 +635,8 @@
             const conceptBody = document.getElementById('conceptBody');
             const detailBody = document.getElementById('detailBody');
             
-            conceptBody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
-            detailBody.innerHTML = '<tr><td colspan="7" class="loading">请选择题材查看详情</td></tr>';
+            conceptBody.innerHTML = '<tr><td colspan="2" class="loading">加载中...</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="8" class="loading">请选择题材查看详情</td></tr>';
             
             try {
                 const response = await fetch(API_URL);
@@ -621,8 +646,7 @@
                     allStocks = data.data.items;
                     
                     if (allStocks.length === 0) {
-                        conceptBody.innerHTML = '<tr><td colspan="3" class="error">该日期无数据</td></tr>';
-                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
+                        conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无数据</td></tr>';
                         return;
                     }
                     
@@ -671,15 +695,12 @@
                     
                     if (sortedConcepts.length === 0) {
                         conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无题材数据</td></tr>';
-                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                         return;
                     }
                     
                     renderConceptTable(sortedConcepts);
-                    
-                    document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                 } else {
-                    conceptBody.innerHTML = '<tr><td colspan="3" class="error">数据加载失败</td></tr>';
+                    conceptBody.innerHTML = '<tr><td colspan="2" class="error">数据加载失败</td></tr>';
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -702,18 +723,17 @@
                 countCell.textContent = stocks.length;
                 
                 row.addEventListener('click', function() {
-                    if (selectedRow) {
-                        selectedRow.classList.remove('selected-row');
-                    }
-                    this.classList.add('selected-row');
-                    selectedRow = this;
-                    
-                    document.getElementById('detailTitle').textContent = conceptName + ' 相关股票';
-                    currentSortField = null;
-                    sortDirection = 'desc';
-                    updateSortIndicators();
-                    renderDetailTable(stocks);
-                });
+                        if (selectedRow) {
+                            selectedRow.classList.remove('selected-row');
+                        }
+                        this.classList.add('selected-row');
+                        selectedRow = this;
+                        
+                        currentSortField = null;
+                        sortDirection = 'desc';
+                        updateSortIndicators();
+                        renderDetailTable(stocks);
+                    });
             });
         }
         
@@ -873,10 +893,16 @@
         function sortByBoards() {
             if (currentStocks.length === 0) return;
             
+            if (currentSortField === 'boards') {
+                sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
+            } else {
+                sortDirection = 'desc';
+            }
+            
             const sortedStocks = [...currentStocks].sort((a, b) => {
                 const boardsA = parseBoards(a.boards);
                 const boardsB = parseBoards(b.boards);
-                return boardsB - boardsA;
+                return sortDirection === 'desc' ? boardsB - boardsA : boardsA - boardsB;
             });
             
             currentSortField = 'boards';
@@ -956,7 +982,7 @@
             amountIndicator.textContent = '';
             
             if (currentSortField === 'boards') {
-                boardsIndicator.textContent = '▼';
+                boardsIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
             } else if (currentSortField === 'change') {
                 changeIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
             } else if (currentSortField === 'amount') {

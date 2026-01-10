@@ -1,525 +1,138 @@
-
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>涨停板题材解读</title>
-    <style>
-        :root {
-            --bg-color: #1e1e1e;
-            --container-bg: #2d2d30;
-            --text-color: #cccccc;
-            --header-color: #cccccc;
-            --border-color: #3f3f46;
-            --table-header-bg: #333333;
-            --table-row-even: #3a3a3a;
-            --table-row-hover: #444444;
-            --selected-row: #3a506b;
-            --link-color: #4d90fe;
-            --footer-color: #888888;
-        }
-        
-        body {
-            font-family: "Microsoft YaHei", "微软雅黑", SimSun, "宋体", sans-serif;
-            margin: 0;
-            padding: 5px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            width: 900px;
-            margin: 0 auto;
-        }
-        .container {
-            width: 100%;
-            margin: 0 auto;
-            background-color: var(--container-bg);
-            padding: 8px;
-            border-radius: 3px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-            font-size: 12px;
-        }
-        h1 {
-            text-align: center;
-            color: var(--header-color);
-            border-bottom: 1px solid #4CAF50;
-            padding-bottom: 3px;
-            font-size: 16px;
-            margin: 5px 0;
-        }
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .date-title {
-            flex: 1;
-            text-align: left;
-            color: var(--header-color);
-            font-weight: bold;
-            font-size: 13px;
-        }
-        .concept-title {
-            flex: 1;
-            text-align: right;
-            color: red;
-            font-size: 13px;
-        }
-        .content {
-            display: flex;
-            gap: 2px;
-        }
-        .left-panel {
-            width: 280px;
-        }
-        .right-panel {
-            flex: 1;
-            min-height: 400px;
-            margin-left: 0;
-        }
-        table {
-            border-collapse: collapse;
-            margin: 5px 0;
-            font-size: 14px;
-            table-layout: fixed;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid var(--border-color);
-            padding: 4px 2px;
-            text-align: center;
-            word-wrap: break-word;
-        }
-        th {
-            background-color: var(--table-header-bg);
-            color: white;
-            font-size: 13px;
-            padding: 5px 3px;
-        }
-        td.description-column {
-            text-align: left;
-        }
-        tr:nth-child(even) {
-            background-color: var(--table-row-even);
-        }
-        tr:hover {
-            background-color: var(--table-row-hover);
-            cursor: pointer;
-        }
-        .section {
-            margin-bottom: 10px;
-        }
-        .footer {
-            text-align: center;
-            margin: 10px 0 3px 0;
-            color: white;
-            font-size: 10px;
-        }
-        .left-table { 
-            width: 160px;
-            table-layout: fixed; 
-        }
-        .rank-column { width: 30px; min-width: 30px; max-width: 30px; }
-        .left-table .name-column { width: 100px !important; min-width: 100px !important; max-width: 100px !important; }
-        .count-column { width: 40px; min-width: 40px; max-width: 40px; }
-        
-        .right-table { 
-            width: 100%;
-        }
-        .code-column { width: 70px; }
-        .name-column { width: 60px; }
-        .price-column { width: 60px; }
-        .change-column { width: 60px; }
-        .time-column { width: 60px; }
-        .amount-column { width: 80px; }
-        .value-column { width: 80px; }
-        .turnover-column { width: 60px; }
-        .boards-column { width: 70px; }
-        .description-column { width: 200px; }
-        
-        .sortable {
-            cursor: pointer;
-            user-select: none;
-        }
-        
-        .sortable:hover {
-            background-color: #444;
-        }
-        
-        .sort-indicator {
-            margin-left: 3px;
-            font-size: 10px;
-        }
-        
-        .selected-row {
-            background-color: var(--selected-row) !important;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #888;
-        }
-        
-        .error {
-            color: #ff4d4d;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .refresh-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            border-radius: 3px;
-        }
-        .refresh-btn:hover {
-            background-color: #45a049;
-        }
-        
-        .date-selector {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 10px;
-        }
-        
-        .date-selector input[type="date"] {
-            background-color: #333;
-            color: #ccc;
-            border: 1px solid #3f3f46;
-            padding: 3px 5px;
-            font-size: 12px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        
-        .date-selector input[type="date"]:hover {
-            background-color: #444;
-        }
-        
-        .date-selector {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .date-selector input[type="date"] {
-            padding: 3px 5px;
-            border: 1px solid var(--border-color);
-            border-radius: 3px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            cursor: pointer;
-        }
-        .date-selector input[type="date"]:focus {
-            outline: none;
-            border-color: #4d90fe;
-        }
-        .date-selector input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
-        .font-size-control {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 8px;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 3px;
-        }
-        .font-size-control label {
-            font-size: 11px;
-            color: var(--text-color);
-            white-space: nowrap;
-        }
-        .font-size-btn {
-            padding: 2px 8px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-            border-radius: 2px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            min-width: 25px;
-            text-align: center;
-        }
-        .font-size-btn:hover {
-            background-color: var(--table-row-hover);
-            border-color: #4d90fe;
-        }
-        .font-size-btn:active {
-            background-color: var(--table-row-even);
-        }
-        .font-size-display {
-            min-width: 30px;
-            text-align: center;
-            font-size: 11px;
-            color: var(--link-color);
-            font-weight: bold;
-        }
-        .concept-title {
-            flex: 1;
-            text-align: right;
-            color: red;
-            font-size: 13px;
-        }
-    </style>
-</head>
+
+    <!-- 引入外部CSS文件 -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- 引入JavaScript文件 -->
+    <script src="/static/js/echarts.min.js"></script>
+    <script src="/static/js/main.js"></script>
+    </head>
 <body>
     <div class="container">
-         <div class="header-container">
-            <div class="date-selector">
-                <span class="market-label" style="font-size: 14px;">
-                    <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
-                </span>
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <input type="date" id="datePicker" placeholder="选择日期" onchange="onDateChange()" class="filter-input">
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <a href="/all_hot" style="color: white !important; text-decoration: none !important; font-size: 14px;"> 所有股票同列 </a>
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <a href="/" style="color: white !important; text-decoration: none !important; font-size: 14px;"> 按题材同列 </a>
-                <div style="margin-left: auto; color: orange !important; font-size: 14px;">
-                    公众号：别浪 好好学习
-                </div>
-            </div>
-        </div>
+
         
-        <div class="content">
-            <div class="left-panel">
-                <div class="section">
-                    <table class="left-table" id="conceptTable">
-                        <thead>
-                            <tr>
-                                <th class="name-column" style="width: 120px !important; min-width: 120px !important; max-width: 120px !important;">题材名称</th>
-                                <th class="count-column" style="width: 40px !important; min-width: 40px !important; max-width: 40px !important;">数量</th>
-                            </tr>
-                        </thead>
-                        <tbody id="conceptBody">
-                            <tr><td colspan="2" class="loading">加载中...</td></tr>
-                        </tbody>
-                    </table>
+
+        <!-- 移除重复的搜索框 -->
+        <div class="table-container">
+            <!-- 头部容器 - 包含日期选择器和文字提示 -->
+            <div class="header-container">
+                <div class="date-selector">
+                    <span class="market-label">
+                        <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
+                    </span>
+                    <span style="color: var(--text-color);"> | </span>
+                    <input type="date" id="dateFilter" placeholder="选择日期" onchange="filterByDate(this.value)" class="filter-input">
+                    <span style="color: var(--text-color);"> | </span>
+                    <a href="/" style="color: white !important; text-decoration: none !important; font-size: 14px;">所有股票同列</a>
+                    <span style="color: var(--text-color);"> | </span>
+                    <a href="/zqtc_tdx" style="color: white !important; text-decoration: none !important; font-size: 14px;">按题材同列</a>
+                    <div style="margin-left: auto; color: orange !important; font-size: 14px;">
+                        公众号：别浪 好好学习
+                    </div>
                 </div>
             </div>
             
-            <div class="right-panel">
-                <div class="section">
-                    <table class="right-table" id="detailTable">
-                        <thead>
+            <!-- 搜索建议下拉框 -->
+            <div id="searchSuggestions" class="search-suggestions"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="120px">
+                            <div class="search-wrapper">
+                                <input 
+                                    type="text" 
+                                    id="searchInput" 
+                                    placeholder="股票名称" 
+                                    class="search-input"
+                                    oninput="showSuggestions(this.value)"
+                                >
+                            </div>
+                        </th>
+                        <th>分时图</th>
+                        <th>价格</th>
+                        <th class="sortable" onclick="sortByChangePercentage()">涨幅</th>
+                        <th class="sortable" onclick="sortByAmount()">成交额</th>
+                        <th>流通市值</th>
+                        <th style="display: none;">代码</th>
+                        <th style="display: none;">市场</th>
+                        <th class="sortable" onclick="sortByDaysBoards()">几天几板</th>
+                        <th>解读</th>
+                        <th class="plate-column" style="width: 120px !important; min-width: 120px !important; max-width: 120px !important; padding: 4px !important;">
+                            <input type="text" id="plateFilter" placeholder="搜索题材" oninput="filterByPlate(this.value)" class="filter-input">
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="stockTableBody">
+                    {% if stocks %}
+                        {% for stock in stocks %}
+                            <tr onclick="linkToTongDaXin('{{ stock.code_part }}')" style="cursor: pointer;">
+                                <td class="stock-name-link{% if stock.code_part.startswith('688') %} blue-text{% elif stock.code_part.startswith('3') or stock.code_part.startswith('68') %} orange-text{% endif %}">{{ stock.name }}</td>
+                                <td><div class="time-chart" data-code="{{ stock.code_part }}"></div></td>
+                                <td class="price"></td>
+                                <td class="change-percentage"></td>
+                                <td class="amount"></td>
+                                <td class="value"></td>
+                                <td style="display: none;" class="{% if stock.code_part.startswith('3') %}orange-code{% endif %}">{{ stock.code_part }}</td>
+                                <td style="display: none;">{{ stock.market }}</td>
+                                <td>{% if stock.m_days_n_boards %}
+                                    <span class="days-boards-tag">{{ stock.m_days_n_boards }}</span>
+                                {% else %}{{ stock.m_days_n_boards }}{% endif %}</td>
+                                <td>{{ stock.description }}</td>
+                                <td class="plate-column">{{ stock.plates }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="11" class="no-data">暂无股票数据，请点击"抓取股票数据"按钮获取数据</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 右侧题材统计表 - 移到container内部 -->
+        <div class="sidebar">
+            <div class="plate-stats-container">
+
+                <div class="stats-content">
+                    <!-- 搜索框和按钮 -->
+                    <div class="plate-search-container">
+                        <input type="text" id="plateSearchInput" placeholder="搜索所有题材" class="plate-search-input">
+                        <button onclick="searchPlate()" class="plate-search-button">GO</button>
+                    </div>
+                    <table id="plateStatsTable" class="plate-stats-table">
+                        <thead class="plate-stats-table th">
                             <tr>
-                                <th class="name-column">股票名称</th>
-                                <th class="boards-column sortable" onclick="sortByBoards()">几天几板<span id="boardsSortIndicator" class="sort-indicator"></span></th>
-                                <th class="price-column">现价</th>
-                                <th class="change-column sortable" onclick="sortByChange()">涨幅<span id="changeSortIndicator" class="sort-indicator"></span></th>
-                                <th class="time-column">涨停时间</th>
-                                <th class="amount-column sortable" onclick="sortByAmount()">成交额<span id="amountSortIndicator" class="sort-indicator"></span></th>
-                                <th class="value-column">流通市值</th>
-                                <th class="description-column">涨停原因</th>
+                                <th>题材名称</th>
+                                <th>数量</th>
                             </tr>
                         </thead>
-                        <tbody id="detailBody">
-                            <tr><td colspan="8" class="loading">请选择题材查看详情</td></tr>
+                        <tbody id="plateStatsBody">
+                            <!-- JavaScript将动态填充统计数据 -->
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-        
-        <div class="footer">
-            【公众号：别浪 好好学习】 生成时间: <span id="generateTime"></span>
         </div>
     </div>
     
+    <!-- 移除数据来源和旋极宝的脚本 -->
     <script>
-        let allStocks = [];
-        let conceptData = {};
-        let selectedRow = null;
-        let selectedDate = null;
-        let currentStocks = [];
-        let currentSortField = null;
-        let sortDirection = 'desc';
-        let autoRefreshTimer = null;
-        
-        function isWeekend(date) {
-            const day = date.getDay();
-            return day === 0 || day === 6;
-        }
-        
-        function isHoliday(date) {
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const day = date.getDate();
-            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            
-            const holidays = {
-                '2024': [
-                    '2024-01-01', '2024-02-10', '2024-02-11', '2024-02-12',
-                    '2024-02-13', '2024-02-14', '2024-02-15', '2024-02-16',
-                    '2024-02-17', '2024-04-04', '2024-04-05', '2024-04-06',
-                    '2024-05-01', '2024-05-02', '2024-05-03', '2024-05-04',
-                    '2024-05-05', '2024-06-10', '2024-09-15', '2024-09-16',
-                    '2024-09-17', '2024-10-01', '2024-10-02', '2024-10-03',
-                    '2024-10-04', '2024-10-05', '2024-10-06', '2024-10-07'
-                ],
-                '2025': [
-                    '2025-01-01', '2025-01-28', '2025-01-29', '2025-01-30',
-                    '2025-01-31', '2025-02-01', '2025-02-02', '2025-02-03',
-                    '2025-02-04', '2025-04-04', '2025-04-05', '2025-04-06',
-                    '2025-05-01', '2025-05-02', '2025-05-03', '2025-05-04',
-                    '2025-05-05', '2025-05-31', '2025-06-01', '2025-06-02',
-                    '2025-10-01', '2025-10-02', '2025-10-03', '2025-10-04',
-                    '2025-10-05', '2025-10-06', '2025-10-07', '2025-10-08'
-                ],
-                '2026': [
-                    '2026-01-01', '2026-02-16', '2026-02-17', '2026-02-18',
-                    '2026-02-19', '2026-02-20', '2026-02-21', '2026-02-22',
-                    '2026-04-04', '2026-04-05', '2026-04-06', '2026-05-01',
-                    '2026-05-02', '2026-05-03', '2026-05-04', '2026-05-05',
-                    '2026-06-19', '2026-09-24', '2026-09-25', '2026-09-26',
-                    '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04',
-                    '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08'
-                ]
-            };
-            
-            if (holidays[year]) {
-                return holidays[year].includes(dateStr);
-            }
-            return false;
-        }
-        
-        function isWorkday(date) {
-            return !isWeekend(date) && !isHoliday(date);
-        }
-        
-        function isTradingTime(date) {
-            const hours = date.getHours();
-            const minutes = date.getMinutes();
-            const time = hours * 60 + minutes;
-            
-            const morningStart = 9 * 60 + 25;
-            const morningEnd = 11 * 60 + 30;
-            const afternoonStart = 13 * 60;
-            const afternoonEnd = 15 * 60;
-            
-            return (time >= morningStart && time <= morningEnd) || (time >= afternoonStart && time <= afternoonEnd);
-        }
-        
-        function findRecentWorkday(date) {
-            let checkDate = new Date(date);
-            let maxDays = 30;
-            let daysChecked = 0;
-            
-            while (daysChecked < maxDays) {
-                if (isWorkday(checkDate)) {
-                    return checkDate;
+        // 确保在页面完全加载后移除任何包含"数据来源"或"旋极宝"的元素
+        window.addEventListener('load', function() {
+            // 查找并移除包含"数据来源"的元素，只检查具体的文本元素，避免删除容器
+            const elementsWithDataSource = document.querySelectorAll('p, span, div, td');
+            elementsWithDataSource.forEach(element => {
+                if (element.textContent && (element.textContent.includes('数据来源') || element.textContent.includes('旋极宝'))) {
+                    // 只移除文本内容，不删除整个元素
+                    element.textContent = element.textContent.replace('数据来源', '').replace('旋极宝', '');
                 }
-                checkDate.setDate(checkDate.getDate() - 1);
-                daysChecked++;
-            }
-            
-            return date;
-        }
-        
-        function initDatePicker() {
-            const datePicker = document.getElementById('datePicker');
-            datePicker.value = '';
-        }
-        
-        function validateSelectedDate() {
-            const datePicker = document.getElementById('datePicker');
-            const dateValue = datePicker.value;
-            
-            if (!dateValue) return true;
-            
-            const selectedDate = new Date(dateValue);
-            
-            if (!isWorkday(selectedDate)) {
-                alert('请选择A股交易日（工作日）');
-                datePicker.value = '';
-                return false;
-            }
-            
-            return true;
-        }
-        
-        function getSelectedDate() {
-            const datePicker = document.getElementById('datePicker');
-            const dateValue = datePicker.value;
-            if (!dateValue) return '';
-            
-            const date = new Date(dateValue);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}${month}${day}`;
-        }
-        
-        function formatDate(timestamp) {
-            const date = new Date(timestamp * 1000);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-        
-        function formatDateTime(timestamp) {
-            const date = new Date(timestamp * 1000);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-        }
-        
-        function formatValue(value) {
-            if (value >= 100000000) {
-                return (value / 100000000).toFixed(2) + '亿';
-            } else if (value >= 10000) {
-                return (value / 10000).toFixed(2) + '万';
-            }
-            return value.toFixed(2);
-        }
-        
-        function formatAmount(amount) {
-            if (amount >= 100000000) {
-                return (amount / 100000000).toFixed(2) + '亿';
-            } else if (amount >= 10000) {
-                return (amount / 10000).toFixed(2) + '万';
-            }
-            return amount.toFixed(2);
-        }
-        
-        function formatChange(rate) {
-            return (rate * 100).toFixed(2) + '%';
-        }
-        
-        function formatChangeFromAPI(rate) {
-            return rate.toFixed(2) + '%';
-        }
-        
-        function formatTurnover(rate) {
-            return (rate * 100).toFixed(2) + '%';
-        }
-        
-        function getSecId(code) {
-            let cleanCode = code;
-            if (code.includes('.')) {
-                cleanCode = code.split('.')[0];
-            }
-            const marketPrefix = cleanCode.startsWith('6') ? '1' : '0';
-            return `${marketPrefix}.${cleanCode}`;
-        }
-        
-        let currentFontSize = 14;
-        
+            });
+        });
+
         function linkToTongDaXin(code) {
             let cleanCode = code;
             if (code.includes('.')) {
@@ -528,466 +141,7 @@
             const link = `http://www.treeid/code_${cleanCode}`;
             window.location.href = link;
         }
-        
-        function changeFontSize(action) {
-            const rightTable = document.getElementById('detailTable');
-            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
-            
-            if (action === -1) {
-                currentFontSize = Math.max(10, currentFontSize - 1);
-            } else if (action === 1) {
-                currentFontSize = Math.min(20, currentFontSize + 1);
-            } else if (action === 0) {
-                currentFontSize = 14;
-            }
-            
-            if (rightTable) {
-                rightTable.style.fontSize = currentFontSize + 'px';
-            }
-            if (fontSizeDisplay) {
-                fontSizeDisplay.textContent = currentFontSize + 'px';
-            }
-        }
-        
-        async function fetchRealTimeData(codes) {
-            if (!codes || codes.length === 0) return {};
-            
-            const secIds = codes.map(code => getSecId(code)).join(',');
-            // 直接调用东方财富API获取实时数据
-            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
-            console.log('Fetching real-time data from:', API_URL);
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json, text/plain, */*',
-                    }
-                });
-                const data = await response.json();
-                
-                console.log('Real-time data response:', data);
-                
-                if (data.rc === 0 && data.data && data.data.diff) {
-                    const realTimeData = {};
-                    data.data.diff.forEach(item => {
-                        realTimeData[item.f12] = {
-                            price: item.f2,
-                            change: item.f3,
-                            amount: item.f6
-                        };
-                    });
-                    console.log('Parsed real-time data:', realTimeData);
-                    return realTimeData;
-                } else {
-                    console.log('Invalid response format:', data);
-                }
-            } catch (error) {
-                console.error('Error fetching real-time data:', error);
-            }
-            
-            return {};
-        }
-        
-        function onDateChange() {
-            if (validateSelectedDate()) {
-                fetchData();
-            }
-        }
-        
-        
-        async function fetchData() {
-            selectedDate = getSelectedDate();
-            
-            let API_URL;
-            if (selectedDate) {
-                API_URL = `https://flash-api.xuangubao.com.cn/api/surge_stock/stocks?date=${selectedDate}&normal=true&uplimit=true`;
-            } else {
-                API_URL = 'https://flash-api.xuangubao.com.cn/api/surge_stock/stocks?normal=true&uplimit=true';
-            }
-            
-            const conceptBody = document.getElementById('conceptBody');
-            const detailBody = document.getElementById('detailBody');
-            
-            conceptBody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
-            detailBody.innerHTML = '<tr><td colspan="7" class="loading">请选择题材查看详情</td></tr>';
-            
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                if (data.code === 20000 && data.data && data.data.items) {
-                    allStocks = data.data.items;
-                    
-                    if (allStocks.length === 0) {
-                        conceptBody.innerHTML = '<tr><td colspan="3" class="error">该日期无数据</td></tr>';
-                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
-                        return;
-                    }
-                    
-                    const fields = data.data.fields;
-                    const codeIndex = fields.indexOf('code');
-                    const nameIndex = fields.indexOf('prod_name');
-                    const priceIndex = fields.indexOf('cur_price');
-                    const changeIndex = fields.indexOf('px_change_rate');
-                    const valueIndex = fields.indexOf('circulation_value');
-                    const descriptionIndex = fields.indexOf('description');
-                    const platesIndex = fields.indexOf('plates');
-                    const turnoverIndex = fields.indexOf('turnover_ratio');
-                    const boardsIndex = fields.indexOf('m_days_n_boards');
-                    const timeIndex = fields.indexOf('enter_time');
-                    
-                    conceptData = {};
-                    
-                    allStocks.forEach(stock => {
-                        const plates = stock[platesIndex];
-                        if (Array.isArray(plates) && plates.length > 0) {
-                            plates.forEach(plate => {
-                                const plateName = plate.name;
-                                if (!conceptData[plateName]) {
-                                    conceptData[plateName] = [];
-                                }
-                                
-                                const stockInfo = {
-                                    code: stock[codeIndex],
-                                    name: stock[nameIndex],
-                                    price: stock[priceIndex],
-                                    change: stock[changeIndex],
-                                    value: stock[valueIndex],
-                                    description: stock[descriptionIndex],
-                                    turnover: stock[turnoverIndex],
-                                    boards: stock[boardsIndex],
-                                    enterTime: stock[timeIndex]
-                                };
-                                
-                                conceptData[plateName].push(stockInfo);
-                            });
-                        }
-                    });
-                    
-                    const sortedConcepts = Object.entries(conceptData)
-                        .sort((a, b) => b[1].length - a[1].length);
-                    
-                    if (sortedConcepts.length === 0) {
-                        conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无题材数据</td></tr>';
-                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
-                        return;
-                    }
-                    
-                    renderConceptTable(sortedConcepts);
-                    
-                    document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
-                } else {
-                    conceptBody.innerHTML = '<tr><td colspan="3" class="error">数据加载失败</td></tr>';
-                }
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                conceptBody.innerHTML = '<tr><td colspan="2" class="error">网络错误: ' + error.message + '</td></tr>';
-            }
-        }
-        
-        function renderConceptTable(concepts) {
-            const conceptBody = document.getElementById('conceptBody');
-            conceptBody.innerHTML = '';
-            
-            concepts.forEach((item, index) => {
-                const [conceptName, stocks] = item;
-                const row = conceptBody.insertRow();
-                
-                const nameCell = row.insertCell(0);
-                nameCell.textContent = conceptName;
-                
-                const countCell = row.insertCell(1);
-                countCell.textContent = stocks.length;
-                
-                row.addEventListener('click', function() {
-                    if (selectedRow) {
-                        selectedRow.classList.remove('selected-row');
-                    }
-                    this.classList.add('selected-row');
-                    selectedRow = this;
-                    
-                    currentSortField = null;
-                    sortDirection = 'desc';
-                    updateSortIndicators();
-                    renderDetailTable(stocks);
-                });
-            });
-        }
-        
-        function renderDetailTable(stocks) {
-            currentStocks = stocks;
-            renderStocks(stocks);
-        }
-        
-        async function renderStocks(stocks) {
-            const detailBody = document.getElementById('detailBody');
-            detailBody.innerHTML = '<tr><td colspan="8" class="loading">加载实时数据中...</td></tr>';
-            
-            const codes = stocks.map(stock => stock.code);
-            console.log('Stocks to fetch:', codes);
-            const realTimeData = await fetchRealTimeData(codes);
-            
-            detailBody.innerHTML = '';
-            
-            stocks.forEach(stock => {
-                const row = detailBody.insertRow();
-                row.dataset.code = stock.code;
-                
-                const cleanCode = stock.code.includes('.') ? stock.code.split('.')[0] : stock.code;
-                
-                const nameCell = row.insertCell(0);
-                nameCell.textContent = stock.name;
-                
-                if (cleanCode.startsWith('3')) {
-                    nameCell.style.color = '#ff9933';
-                } else if (cleanCode.startsWith('68')) {
-                    nameCell.style.color = '#4d90fe';
-                }
-                
-                const boardsCell = row.insertCell(1);
-                boardsCell.textContent = stock.boards || '-';
-                if (stock.boards && stock.boards !== '') {
-                    boardsCell.style.color = '#ff9933';
-                    boardsCell.style.fontWeight = 'bold';
-                }
-                
-                const priceCell = row.insertCell(2);
-                const changeCell = row.insertCell(3);
-                if (realTimeData[cleanCode]) {
-                    const rtData = realTimeData[cleanCode];
-                    priceCell.textContent = rtData.price.toFixed(2);
-                    changeCell.textContent = formatChangeFromAPI(rtData.change);
-                    
-                    const isPositive = rtData.change > 0;
-                    priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                    changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                } else {
-                    priceCell.textContent = stock.price.toFixed(2);
-                    changeCell.textContent = formatChange(stock.change);
-                    changeCell.style.color = stock.change > 0 ? '#ff4d4d' : '#4CAF50';
-                }
-                
-                const timeCell = row.insertCell(4);
-                if (stock.enterTime) {
-                    const date = new Date(stock.enterTime * 1000);
-                    const hours = date.getHours().toString().padStart(2, '0');
-                    const minutes = date.getMinutes().toString().padStart(2, '0');
-                    timeCell.textContent = `${hours}:${minutes}`;
-                } else {
-                    timeCell.textContent = '-';
-                }
-                
-                const amountCell = row.insertCell(5);
-                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
-                    amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
-                } else {
-                    amountCell.textContent = '-';
-                }
-                
-                const valueCell = row.insertCell(6);
-                valueCell.textContent = formatValue(stock.value);
-                
-                const descriptionCell = row.insertCell(7);
-                descriptionCell.className = 'description-column';
-                descriptionCell.textContent = stock.description || '-';
-                
-                row.style.cursor = 'pointer';
-                row.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    linkToTongDaXin(stock.code);
-                });
-            });
-        }
-        
-        async function updateRealTimeData() {
-            const detailBody = document.getElementById('detailBody');
-            const rows = detailBody.querySelectorAll('tr');
-            
-            if (rows.length === 0) return;
-            
-            const codes = [];
-            rows.forEach(row => {
-                const stockCode = row.dataset.code;
-                if (stockCode) {
-                    codes.push(stockCode);
-                }
-            });
-            
-            console.log('Updating real-time data for codes:', codes);
-            const realTimeData = await fetchRealTimeData(codes);
-            console.log('Received real-time data:', realTimeData);
-            
-            rows.forEach((row, index) => {
-                const stockCode = row.dataset.code;
-                if (!stockCode) return;
-                
-                const cleanCode = stockCode.includes('.') ? stockCode.split('.')[0] : stockCode;
-                
-                console.log(`Updating row ${index}: stockCode=${stockCode}, cleanCode=${cleanCode}, rtData=`, realTimeData[cleanCode]);
-                
-                const priceCell = row.cells[2];
-                const changeCell = row.cells[3];
-                const amountCell = row.cells[5];
-                
-                if (realTimeData[cleanCode]) {
-                    const rtData = realTimeData[cleanCode];
-                    priceCell.textContent = rtData.price.toFixed(2);
-                    changeCell.textContent = formatChangeFromAPI(rtData.change);
-                    
-                    const isPositive = rtData.change > 0;
-                    priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                    changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                    
-                    console.log(`Updated with real-time data: price=${rtData.price}, change=${rtData.change}`);
-                } else {
-                    const currentPrice = parseFloat(priceCell.textContent);
-                    const currentChange = parseFloat(changeCell.textContent);
-                    priceCell.textContent = currentPrice.toFixed(2);
-                    changeCell.textContent = formatChange(currentChange);
-                    changeCell.style.color = currentChange > 0 ? '#ff4d4d' : '#4CAF50';
-                    
-                    console.log(`No real-time data, keeping existing values`);
-                }
-                
-                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
-                    amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
-                    console.log(`Updated amount: ${realTimeData[cleanCode].amount}`);
-                } else {
-                    amountCell.textContent = '-';
-                }
-            });
-        }
-        
-        function parseBoards(boardsStr) {
-            if (!boardsStr || boardsStr === '') return 0;
-            const match = boardsStr.match(/(\d+)天(\d+)板/);
-            if (match) {
-                return parseInt(match[2]);
-            }
-            return 0;
-        }
-        
-        function sortByBoards() {
-            if (currentStocks.length === 0) return;
-            
-            const sortedStocks = [...currentStocks].sort((a, b) => {
-                const boardsA = parseBoards(a.boards);
-                const boardsB = parseBoards(b.boards);
-                return boardsB - boardsA;
-            });
-            
-            currentSortField = 'boards';
-            updateSortIndicators();
-            renderStocks(sortedStocks);
-        }
-        
-        async function sortByChange() {
-            if (currentStocks.length === 0) return;
-            
-            if (currentSortField === 'change') {
-                sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
-            } else {
-                sortDirection = 'desc';
-            }
-            
-            const codes = currentStocks.map(stock => stock.code);
-            const realTimeData = await fetchRealTimeData(codes);
-            
-            const sortedStocks = [...currentStocks].sort((a, b) => {
-                const cleanCodeA = a.code.includes('.') ? a.code.split('.')[0] : a.code;
-                const cleanCodeB = b.code.includes('.') ? b.code.split('.')[0] : b.code;
-                
-                const changeA = realTimeData[cleanCodeA] ? realTimeData[cleanCodeA].change : a.change * 100;
-                const changeB = realTimeData[cleanCodeB] ? realTimeData[cleanCodeB].change : b.change * 100;
-                
-                if (sortDirection === 'desc') {
-                    return changeB - changeA;
-                } else {
-                    return changeA - changeB;
-                }
-            });
-            
-            currentSortField = 'change';
-            updateSortIndicators();
-            renderStocks(sortedStocks);
-        }
-        
-        async function sortByAmount() {
-            if (currentStocks.length === 0) return;
-            
-            if (currentSortField === 'amount') {
-                sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
-            } else {
-                sortDirection = 'desc';
-            }
-            
-            const codes = currentStocks.map(stock => stock.code);
-            const realTimeData = await fetchRealTimeData(codes);
-            
-            const sortedStocks = [...currentStocks].sort((a, b) => {
-                const cleanCodeA = a.code.includes('.') ? a.code.split('.')[0] : a.code;
-                const cleanCodeB = b.code.includes('.') ? b.code.split('.')[0] : b.code;
-                
-                const amountA = realTimeData[cleanCodeA] && realTimeData[cleanCodeA].amount ? realTimeData[cleanCodeA].amount : 0;
-                const amountB = realTimeData[cleanCodeB] && realTimeData[cleanCodeB].amount ? realTimeData[cleanCodeB].amount : 0;
-                
-                if (sortDirection === 'desc') {
-                    return amountB - amountA;
-                } else {
-                    return amountA - amountB;
-                }
-            });
-            
-            currentSortField = 'amount';
-            updateSortIndicators();
-            renderStocks(sortedStocks);
-        }
-        
-        function updateSortIndicators() {
-            const boardsIndicator = document.getElementById('boardsSortIndicator');
-            const changeIndicator = document.getElementById('changeSortIndicator');
-            const amountIndicator = document.getElementById('amountSortIndicator');
-            
-            boardsIndicator.textContent = '';
-            changeIndicator.textContent = '';
-            amountIndicator.textContent = '';
-            
-            if (currentSortField === 'boards') {
-                boardsIndicator.textContent = '▼';
-            } else if (currentSortField === 'change') {
-                changeIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
-            } else if (currentSortField === 'amount') {
-                amountIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
-            }
-        }
-        
-        function startAutoRefresh() {
-            if (autoRefreshTimer) {
-                clearInterval(autoRefreshTimer);
-            }
-            
-            autoRefreshTimer = setInterval(async () => {
-                const now = new Date();
-                
-                if (isTradingTime(now) && currentStocks.length > 0) {
-                    await updateRealTimeData();
-                }
-            }, 60000);
-        }
-        
-        function stopAutoRefresh() {
-            if (autoRefreshTimer) {
-                clearInterval(autoRefreshTimer);
-                autoRefreshTimer = null;
-            }
-        }
-        
-        window.onload = function() {
-            initDatePicker();
-            fetchData();
-            startAutoRefresh();
-        };
     </script>
+    
 </body>
 </html>

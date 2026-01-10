@@ -38,8 +38,13 @@ app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
 
 @app.route('/')
 def index():
-    # 显示最强题材解读页面（作为首页）
-    return render_template('index.html')
+    # 默认只显示最新一天的数据
+    latest_data = db.get_latest_day_data()
+    
+    # 从session中获取消息（如果有的话）
+    message = session.pop('message', None)
+    
+    return render_template('index.html', stocks=latest_data, search_mode=False, message=message)
 
 @app.route('/crawl', methods=['POST'])
 def crawl_data():
@@ -128,7 +133,7 @@ def search_results():
     if not keyword:
         # 如果没有关键词，返回最新一天的数据
         latest_data = db.get_latest_day_data()
-        return render_template('all_hot.html', stocks=latest_data, search_mode=False)
+        return render_template('index.html', stocks=latest_data, search_mode=False)
     
     # 首先使用基本的关键词搜索
     search_results = db.search_stocks_by_keyword(keyword)
@@ -156,7 +161,7 @@ def search_results():
                 # 搜索该代码的所有数据
                 code_results = db.search_stocks_by_keyword(code)
                 search_results.extend(code_results)
-    return render_template('all_hot.html', stocks=search_results, search_mode=True, search_keyword=keyword)
+    return render_template('index.html', stocks=search_results, search_mode=True, search_keyword=keyword)
 
 @app.route('/get-data-by-date')
 def get_data_by_date():
@@ -192,16 +197,10 @@ def stock_detail(stock_code):
     history_data = db.get_stock_history_data(stock_code)
     return render_template('stock_detail.html', stock_code=stock_code, history_data=history_data)
 
-@app.route('/all_hot')
-def all_hot():
-    # 显示所有股票同列页面
-    # 默认只显示最新一天的数据
-    latest_data = db.get_latest_day_data()
-    
-    # 从session中获取消息（如果有的话）
-    message = session.pop('message', None)
-    
-    return render_template('all_hot.html', stocks=latest_data, search_mode=False, message=message)
+@app.route('/zqtc_tdx')
+def zqtc_tdx():
+    # 显示最强题材解读页面
+    return render_template('zqtc_tdx.html')
 
 @app.route('/api/realtime-stock-data')
 def get_realtime_stock_data():
