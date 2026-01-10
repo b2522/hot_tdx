@@ -27,68 +27,62 @@
             padding: 5px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            width: 100%;
-            max-width: 100%;
+            width: 900px;
             margin: 0 auto;
         }
         .container {
             width: 100%;
-            max-width: 100%;
             margin: 0 auto;
             background-color: var(--container-bg);
             padding: 8px;
             border-radius: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.3);
             font-size: 12px;
-            box-sizing: border-box;
-            overflow-x: hidden;
         }
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-            box-sizing: border-box;
+        h1 {
+            text-align: center;
+            color: var(--header-color);
+            border-bottom: 1px solid #4CAF50;
+            padding-bottom: 3px;
+            font-size: 16px;
+            margin: 5px 0;
         }
         .header-container {
             display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 10px;
+        }
+        .date-title {
+            flex: 1;
+            text-align: left;
+            color: var(--header-color);
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .concept-title {
+            flex: 1;
+            text-align: right;
+            color: red;
+            font-size: 13px;
         }
         .content {
             display: flex;
-            gap: 20px;
-            width: 100%;
-            box-sizing: border-box;
+            gap: 2px;
         }
         .left-panel {
-            width: 160px;
-            padding: 0;
+            width: 280px;
         }
         .right-panel {
             flex: 1;
             min-height: 400px;
             margin-left: 0;
-            padding: 0;
-            box-sizing: border-box;
-            overflow-x: hidden;
-        }
-        .section {
-            margin: 0;
-            padding: 0;
         }
         table {
             border-collapse: collapse;
-            margin: 0;
+            margin: 5px 0;
             font-size: 14px;
-            table-layout: auto;
+            table-layout: fixed;
             width: 100%;
         }
         th, td {
@@ -100,16 +94,11 @@
         th {
             background-color: var(--table-header-bg);
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             padding: 5px 3px;
-            font-weight: normal;
         }
         td.description-column {
             text-align: left;
-            font-size: 14px;
-        }
-        td.price-column, td.change-column {
-            font-size: 14px;
         }
         tr:nth-child(even) {
             background-color: var(--table-row-even);
@@ -137,17 +126,17 @@
         
         .right-table { 
             width: 100%;
-            table-layout: auto;
-            box-sizing: border-box;
         }
-        .name-column { width: 60px; min-width: 60px; }
-        .boards-column { width: 72px; min-width: 72px; }
-        .price-column { width: 42px; min-width: 42px; }
-        .change-column { width: 42px; min-width: 42px; }
-        .time-column { width: 60px; min-width: 60px; }
-        .amount-column { width: 60px; min-width: 60px; }
-        .value-column { width: 60px; min-width: 60px; }
-        .description-column { flex: 1; min-width: 106px; width: auto; }
+        .code-column { width: 70px; }
+        .name-column { width: 60px; }
+        .price-column { width: 60px; }
+        .change-column { width: 60px; }
+        .time-column { width: 60px; }
+        .amount-column { width: 80px; }
+        .value-column { width: 80px; }
+        .turnover-column { width: 60px; }
+        .boards-column { width: 70px; }
+        .description-column { width: 200px; }
         
         .sortable {
             cursor: pointer;
@@ -195,11 +184,8 @@
         .date-selector {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 5px;
             margin-left: 10px;
-            flex-wrap: wrap;
-            width: 100%;
-            padding: 5px 0;
         }
         
         .date-selector input[type="date"] {
@@ -207,7 +193,7 @@
             color: #ccc;
             border: 1px solid #3f3f46;
             padding: 3px 5px;
-            font-size: 14px;
+            font-size: 12px;
             border-radius: 3px;
             cursor: pointer;
         }
@@ -220,7 +206,7 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         .date-selector input[type="date"] {
             padding: 3px 5px;
@@ -237,20 +223,6 @@
         .date-selector input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
-        }
-        .filter-input {
-            margin: 0 auto;
-            display: block;
-            padding: 5px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            text-align: center;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            width: 100%;
-            max-width: 150px;
-            box-sizing: border-box;
-            font-size: 14px;
         }
         .font-size-control {
             display: flex;
@@ -302,7 +274,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header-container">
+         <div class="header-container">
             <div class="date-selector">
                 <span class="market-label" style="font-size: 14px;">
                     <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
@@ -347,6 +319,7 @@
                                 <th class="change-column sortable" onclick="sortByChange()">涨幅<span id="changeSortIndicator" class="sort-indicator"></span></th>
                                 <th class="time-column">涨停时间</th>
                                 <th class="amount-column sortable" onclick="sortByAmount()">成交额<span id="amountSortIndicator" class="sort-indicator"></span></th>
+                                <th class="value-column">流通市值</th>
                                 <th class="description-column">涨停原因</th>
                             </tr>
                         </thead>
@@ -358,7 +331,9 @@
             </div>
         </div>
         
-        
+        <div class="footer">
+            【公众号：别浪 好好学习】 生成时间: <span id="generateTime"></span>
+        </div>
     </div>
     
     <script>
@@ -370,9 +345,6 @@
         let currentSortField = null;
         let sortDirection = 'desc';
         let autoRefreshTimer = null;
-        let realTimeDataCache = {};
-        let lastCacheTime = 0;
-        const CACHE_DURATION = 5000;
         
         function isWeekend(date) {
             const day = date.getDay();
@@ -508,9 +480,6 @@
         }
         
         function formatValue(value) {
-            if (value === undefined || value === null || isNaN(value)) {
-                return '-';
-            }
             if (value >= 100000000) {
                 return (value / 100000000).toFixed(2) + '亿';
             } else if (value >= 10000) {
@@ -520,9 +489,6 @@
         }
         
         function formatAmount(amount) {
-            if (amount === undefined || amount === null || isNaN(amount)) {
-                return '-';
-            }
             if (amount >= 100000000) {
                 return (amount / 100000000).toFixed(2) + '亿';
             } else if (amount >= 10000) {
@@ -532,23 +498,14 @@
         }
         
         function formatChange(rate) {
-            if (rate === undefined || rate === null || isNaN(rate)) {
-                return '-';
-            }
             return (rate * 100).toFixed(2) + '%';
         }
         
         function formatChangeFromAPI(rate) {
-            if (rate === undefined || rate === null || isNaN(rate)) {
-                return '-';
-            }
             return rate.toFixed(2) + '%';
         }
         
         function formatTurnover(rate) {
-            if (rate === undefined || rate === null || isNaN(rate)) {
-                return '-';
-            }
             return (rate * 100).toFixed(2) + '%';
         }
         
@@ -595,15 +552,9 @@
         async function fetchRealTimeData(codes) {
             if (!codes || codes.length === 0) return {};
             
-            const now = Date.now();
-            if (now - lastCacheTime < CACHE_DURATION && Object.keys(realTimeDataCache).length > 0) {
-                console.log('Using cached real-time data');
-                return realTimeDataCache;
-            }
-            
             const secIds = codes.map(code => getSecId(code)).join(',');
-            // 直接调用东方财富API，不经过代理
-            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14,f34&fltt=2&secids=${secIds}`;
+            // 直接调用东方财富API获取实时数据
+            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
             console.log('Fetching real-time data from:', API_URL);
             
             try {
@@ -623,14 +574,10 @@
                         realTimeData[item.f12] = {
                             price: item.f2,
                             change: item.f3,
-                            amount: item.f6,
-                            value: item.f34
+                            amount: item.f6
                         };
                     });
                     console.log('Parsed real-time data:', realTimeData);
-                    
-                    realTimeDataCache = realTimeData;
-                    lastCacheTime = now;
                     return realTimeData;
                 } else {
                     console.log('Invalid response format:', data);
@@ -639,7 +586,7 @@
                 console.error('Error fetching real-time data:', error);
             }
             
-            return realTimeDataCache;
+            return {};
         }
         
         function onDateChange() {
@@ -662,8 +609,8 @@
             const conceptBody = document.getElementById('conceptBody');
             const detailBody = document.getElementById('detailBody');
             
-            conceptBody.innerHTML = '<tr><td colspan="2" class="loading">加载中...</td></tr>';
-            detailBody.innerHTML = '<tr><td colspan="8" class="loading">请选择题材查看详情</td></tr>';
+            conceptBody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="7" class="loading">请选择题材查看详情</td></tr>';
             
             try {
                 const response = await fetch(API_URL);
@@ -673,7 +620,8 @@
                     allStocks = data.data.items;
                     
                     if (allStocks.length === 0) {
-                        conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无数据</td></tr>';
+                        conceptBody.innerHTML = '<tr><td colspan="3" class="error">该日期无数据</td></tr>';
+                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                         return;
                     }
                     
@@ -722,12 +670,15 @@
                     
                     if (sortedConcepts.length === 0) {
                         conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无题材数据</td></tr>';
+                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                         return;
                     }
                     
                     renderConceptTable(sortedConcepts);
+                    
+                    document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                 } else {
-                    conceptBody.innerHTML = '<tr><td colspan="2" class="error">数据加载失败</td></tr>';
+                    conceptBody.innerHTML = '<tr><td colspan="3" class="error">数据加载失败</td></tr>';
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -750,181 +701,103 @@
                 countCell.textContent = stocks.length;
                 
                 row.addEventListener('click', function() {
-                        if (selectedRow) {
-                            selectedRow.classList.remove('selected-row');
-                        }
-                        this.classList.add('selected-row');
-                        selectedRow = this;
-                        
-                        currentSortField = null;
-                        sortDirection = 'desc';
-                        updateSortIndicators();
-                        
-                        console.log('点击题材:', conceptName, '股票数量:', stocks.length);
-                        
-                        // 异步调用renderDetailTable
-                        (async () => {
-                            try {
-                                console.log('开始加载题材数据:', conceptName);
-                                await renderDetailTable(stocks);
-                                console.log('题材数据加载完成:', conceptName);
-                            } catch (error) {
-                                console.error('加载题材数据失败:', error);
-                            }
-                        })();
-                    });
+                    if (selectedRow) {
+                        selectedRow.classList.remove('selected-row');
+                    }
+                    this.classList.add('selected-row');
+                    selectedRow = this;
                     
-                    // 为td元素添加点击事件，确保点击单元格也能触发
-                    nameCell.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        row.click();
-                    });
-                    
-                    countCell.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        row.click();
-                    });
+                    currentSortField = null;
+                    sortDirection = 'desc';
+                    updateSortIndicators();
+                    renderDetailTable(stocks);
+                });
             });
         }
         
-        async function renderDetailTable(stocks) {
+        function renderDetailTable(stocks) {
             currentStocks = stocks;
-            
-            // 切换题材时清理缓存，确保获取新数据
-            realTimeDataCache = {};
-            lastCacheTime = 0;
-            
-            // 先获取实时数据
-            const codes = stocks.map(stock => stock.code);
-            if (codes.length > 0) {
-                await fetchRealTimeData(codes);
-            }
-            
             renderStocks(stocks);
         }
         
-        function renderStocks(stocks) {
+        async function renderStocks(stocks) {
             const detailBody = document.getElementById('detailBody');
+            detailBody.innerHTML = '<tr><td colspan="8" class="loading">加载实时数据中...</td></tr>';
             
-            if (!detailBody) {
-                console.error('detailBody element not found');
-                return;
-            }
+            const codes = stocks.map(stock => stock.code);
+            console.log('Stocks to fetch:', codes);
+            const realTimeData = await fetchRealTimeData(codes);
             
-            // 显示加载状态
-            detailBody.innerHTML = '<tr><td colspan="8" class="loading">数据加载中...</td></tr>';
+            detailBody.innerHTML = '';
             
-            console.log('Rendering stocks:', stocks.length, 'items');
-            
-            // 分批渲染配置
-            const BATCH_SIZE = 20;
-            let currentIndex = 0;
-            
-            function renderBatch() {
-                const batch = stocks.slice(currentIndex, currentIndex + BATCH_SIZE);
-                if (batch.length === 0) {
-                    console.log('Rendering complete');
-                    return;
+            stocks.forEach(stock => {
+                const row = detailBody.insertRow();
+                row.dataset.code = stock.code;
+                
+                const cleanCode = stock.code.includes('.') ? stock.code.split('.')[0] : stock.code;
+                
+                const nameCell = row.insertCell(0);
+                nameCell.textContent = stock.name;
+                
+                if (cleanCode.startsWith('3')) {
+                    nameCell.style.color = '#ff9933';
+                } else if (cleanCode.startsWith('68')) {
+                    nameCell.style.color = '#4d90fe';
                 }
                 
-                console.log('Rendering batch:', currentIndex, 'to', currentIndex + BATCH_SIZE);
-                
-                // 第一次渲染时清空表格
-                if (currentIndex === 0) {
-                    detailBody.innerHTML = '';
+                const boardsCell = row.insertCell(1);
+                boardsCell.textContent = stock.boards || '-';
+                if (stock.boards && stock.boards !== '') {
+                    boardsCell.style.color = '#ff9933';
+                    boardsCell.style.fontWeight = 'bold';
                 }
                 
-                // 使用DocumentFragment减少DOM操作
-                const fragment = document.createDocumentFragment();
-                
-                batch.forEach(stock => {
-                    try {
-                        const row = document.createElement('tr');
-                        row.dataset.code = stock.code || '';
-                        
-                        const stockCode = stock.code || '';
-                        const cleanCode = stockCode.includes('.') ? stockCode.split('.')[0] : stockCode;
-                        
-                        const nameCell = row.insertCell(0);
-                        nameCell.textContent = stock.name || '-';
-                        
-                        if (cleanCode.startsWith('3')) {
-                            nameCell.style.color = '#ff9933';
-                        } else if (cleanCode.startsWith('68')) {
-                            nameCell.style.color = '#4d90fe';
-                        }
+                const priceCell = row.insertCell(2);
+                const changeCell = row.insertCell(3);
+                if (realTimeData[cleanCode]) {
+                    const rtData = realTimeData[cleanCode];
+                    priceCell.textContent = rtData.price.toFixed(2);
+                    changeCell.textContent = formatChangeFromAPI(rtData.change);
                     
-                        const boardsCell = row.insertCell(1);
-                        boardsCell.textContent = stock.boards || '-';
-                        if (stock.boards && stock.boards !== '') {
-                            boardsCell.style.color = '#ff9933';
-                            boardsCell.style.fontWeight = 'bold';
-                        }
-                    
-                        const priceCell = row.insertCell(2);
-                        const changeCell = row.insertCell(3);
-                        if (realTimeDataCache[cleanCode]) {
-                            const rtData = realTimeDataCache[cleanCode];
-                            priceCell.textContent = rtData.price ? rtData.price.toFixed(2) : '-';
-                            changeCell.textContent = rtData.change ? formatChangeFromAPI(rtData.change) : '-';
-                            
-                            const isPositive = rtData.change > 0;
-                            priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                            changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                        } else {
-                            priceCell.textContent = '-';
-                            changeCell.textContent = '-';
-                        }
-                    
-                        const timeCell = row.insertCell(4);
-                        if (stock.enterTime) {
-                            const date = new Date(stock.enterTime * 1000);
-                            const hours = date.getHours().toString().padStart(2, '0');
-                            const minutes = date.getMinutes().toString().padStart(2, '0');
-                            timeCell.textContent = `${hours}:${minutes}`;
-                        } else {
-                            timeCell.textContent = '-';
-                        }
-                    
-                        const amountCell = row.insertCell(5);
-                        if (realTimeDataCache[cleanCode] && 'amount' in realTimeDataCache[cleanCode]) {
-                            amountCell.textContent = formatAmount(realTimeDataCache[cleanCode].amount);
-                        } else {
-                            amountCell.textContent = '-';
-                        }
-                    
-                        const descriptionCell = row.insertCell(6);
-                        descriptionCell.className = 'description-column';
-                        descriptionCell.textContent = stock.description || '-';
-                    
-                        row.style.cursor = 'pointer';
-                        row.addEventListener('click', function(e) {
-                            e.stopPropagation();
-                            linkToTongDaXin(stock.code || '');
-                        });
-                    
-                        fragment.appendChild(row);
-                    } catch (error) {
-                        console.error('Error rendering stock:', error, stock);
-                    }
-                });
-                
-                // 一次性添加批次行
-                detailBody.appendChild(fragment);
-                console.log('Added', batch.length, 'rows to table');
-                
-                // 继续渲染下一批
-                currentIndex += BATCH_SIZE;
-                if (currentIndex < stocks.length) {
-                    // 让出主线程，避免UI阻塞
-                    setTimeout(renderBatch, 0);
+                    const isPositive = rtData.change > 0;
+                    priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
+                    changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
                 } else {
-                    console.log('All batches rendered');
+                    priceCell.textContent = stock.price.toFixed(2);
+                    changeCell.textContent = formatChange(stock.change);
+                    changeCell.style.color = stock.change > 0 ? '#ff4d4d' : '#4CAF50';
                 }
-            }
-            
-            // 开始分批渲染
-            renderBatch();
+                
+                const timeCell = row.insertCell(4);
+                if (stock.enterTime) {
+                    const date = new Date(stock.enterTime * 1000);
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    timeCell.textContent = `${hours}:${minutes}`;
+                } else {
+                    timeCell.textContent = '-';
+                }
+                
+                const amountCell = row.insertCell(5);
+                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
+                    amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
+                } else {
+                    amountCell.textContent = '-';
+                }
+                
+                const valueCell = row.insertCell(6);
+                valueCell.textContent = formatValue(stock.value);
+                
+                const descriptionCell = row.insertCell(7);
+                descriptionCell.className = 'description-column';
+                descriptionCell.textContent = stock.description || '-';
+                
+                row.style.cursor = 'pointer';
+                row.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    linkToTongDaXin(stock.code);
+                });
+            });
         }
         
         async function updateRealTimeData() {
@@ -945,12 +818,13 @@
             const realTimeData = await fetchRealTimeData(codes);
             console.log('Received real-time data:', realTimeData);
             
-            // 批量更新DOM，减少重排
             rows.forEach((row, index) => {
                 const stockCode = row.dataset.code;
                 if (!stockCode) return;
                 
                 const cleanCode = stockCode.includes('.') ? stockCode.split('.')[0] : stockCode;
+                
+                console.log(`Updating row ${index}: stockCode=${stockCode}, cleanCode=${cleanCode}, rtData=`, realTimeData[cleanCode]);
                 
                 const priceCell = row.cells[2];
                 const changeCell = row.cells[3];
@@ -964,10 +838,23 @@
                     const isPositive = rtData.change > 0;
                     priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
                     changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
+                    
+                    console.log(`Updated with real-time data: price=${rtData.price}, change=${rtData.change}`);
+                } else {
+                    const currentPrice = parseFloat(priceCell.textContent);
+                    const currentChange = parseFloat(changeCell.textContent);
+                    priceCell.textContent = currentPrice.toFixed(2);
+                    changeCell.textContent = formatChange(currentChange);
+                    changeCell.style.color = currentChange > 0 ? '#ff4d4d' : '#4CAF50';
+                    
+                    console.log(`No real-time data, keeping existing values`);
                 }
                 
-                if (realTimeData[cleanCode] && 'amount' in realTimeData[cleanCode]) {
+                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
                     amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
+                    console.log(`Updated amount: ${realTimeData[cleanCode].amount}`);
+                } else {
+                    amountCell.textContent = '-';
                 }
             });
         }
@@ -984,16 +871,10 @@
         function sortByBoards() {
             if (currentStocks.length === 0) return;
             
-            if (currentSortField === 'boards') {
-                sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
-            } else {
-                sortDirection = 'desc';
-            }
-            
             const sortedStocks = [...currentStocks].sort((a, b) => {
                 const boardsA = parseBoards(a.boards);
                 const boardsB = parseBoards(b.boards);
-                return sortDirection === 'desc' ? boardsB - boardsA : boardsA - boardsB;
+                return boardsB - boardsA;
             });
             
             currentSortField = 'boards';
@@ -1001,7 +882,7 @@
             renderStocks(sortedStocks);
         }
         
-        function sortByChange() {
+        async function sortByChange() {
             if (currentStocks.length === 0) return;
             
             if (currentSortField === 'change') {
@@ -1010,12 +891,15 @@
                 sortDirection = 'desc';
             }
             
+            const codes = currentStocks.map(stock => stock.code);
+            const realTimeData = await fetchRealTimeData(codes);
+            
             const sortedStocks = [...currentStocks].sort((a, b) => {
                 const cleanCodeA = a.code.includes('.') ? a.code.split('.')[0] : a.code;
                 const cleanCodeB = b.code.includes('.') ? b.code.split('.')[0] : b.code;
                 
-                const changeA = realTimeDataCache[cleanCodeA] ? realTimeDataCache[cleanCodeA].change : 0;
-                const changeB = realTimeDataCache[cleanCodeB] ? realTimeDataCache[cleanCodeB].change : 0;
+                const changeA = realTimeData[cleanCodeA] ? realTimeData[cleanCodeA].change : a.change * 100;
+                const changeB = realTimeData[cleanCodeB] ? realTimeData[cleanCodeB].change : b.change * 100;
                 
                 if (sortDirection === 'desc') {
                     return changeB - changeA;
@@ -1029,7 +913,7 @@
             renderStocks(sortedStocks);
         }
         
-        function sortByAmount() {
+        async function sortByAmount() {
             if (currentStocks.length === 0) return;
             
             if (currentSortField === 'amount') {
@@ -1038,12 +922,15 @@
                 sortDirection = 'desc';
             }
             
+            const codes = currentStocks.map(stock => stock.code);
+            const realTimeData = await fetchRealTimeData(codes);
+            
             const sortedStocks = [...currentStocks].sort((a, b) => {
                 const cleanCodeA = a.code.includes('.') ? a.code.split('.')[0] : a.code;
                 const cleanCodeB = b.code.includes('.') ? b.code.split('.')[0] : b.code;
                 
-                const amountA = realTimeDataCache[cleanCodeA] && realTimeDataCache[cleanCodeA].amount ? realTimeDataCache[cleanCodeA].amount : 0;
-                const amountB = realTimeDataCache[cleanCodeB] && realTimeDataCache[cleanCodeB].amount ? realTimeDataCache[cleanCodeB].amount : 0;
+                const amountA = realTimeData[cleanCodeA] && realTimeData[cleanCodeA].amount ? realTimeData[cleanCodeA].amount : 0;
+                const amountB = realTimeData[cleanCodeB] && realTimeData[cleanCodeB].amount ? realTimeData[cleanCodeB].amount : 0;
                 
                 if (sortDirection === 'desc') {
                     return amountB - amountA;
@@ -1067,7 +954,7 @@
             amountIndicator.textContent = '';
             
             if (currentSortField === 'boards') {
-                boardsIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
+                boardsIndicator.textContent = '▼';
             } else if (currentSortField === 'change') {
                 changeIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
             } else if (currentSortField === 'amount') {
