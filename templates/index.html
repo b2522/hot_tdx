@@ -25,6 +25,9 @@
                         <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
                     </span>
                     <span style="color: var(--text-color);"> | </span>
+                    <button onclick="location.reload()" class="refresh-button" title="刷新页面">
+                    刷新
+                </button>
                     <input type="date" id="dateFilter" placeholder="选择日期" onchange="filterByDate(this.value)" class="filter-input">
                     <div style="margin-left: auto; color: orange !important; font-size: 14px;">
                         公众号：别浪 好好学习
@@ -138,7 +141,34 @@
             const link = `http://www.treeid/code_${cleanCode}`;
             window.location.href = link;
         }
+        
+        // 返回顶部按钮功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const backToTopBtn = document.getElementById('backToTopBtn');
+            
+            // 监听页面滚动事件
+            window.addEventListener('scroll', function() {
+                // 当滚动超过200像素时显示按钮，否则隐藏
+                if (window.pageYOffset > 200) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            
+            // 点击按钮时平滑滚动到顶部
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
     </script>
+    
+    <!-- 返回顶部按钮 -->
+    <button id="backToTopBtn" class="back-to-top" title="返回顶部">
+    </button>
     
 </body>
 </html>

@@ -671,6 +671,93 @@ th:nth-child(10) .filter-input {
     color: rgba(60, 127, 250, 0.781);
 }
 
+/* 刷新按钮样式 */
+.refresh-button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 500;
+    height: fit-content;
+    white-space: nowrap;
+}
+
+.refresh-button:hover {
+    background-color: #1976D2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.refresh-button:active {
+    transform: translateY(0);
+}
+
+.refresh-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* 返回顶部按钮样式 */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.back-to-top.show {
+    opacity: 0.7;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    opacity: 0.9;
+}
+
+.back-to-top:active {
+    transform: translateY(0);
+}
+
+/* 向上三角形箭头样式 */
+.back-to-top::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-bottom: 12px solid rgba(255, 255, 255, 0.7);
+    transition: all 0.3s ease;
+}
+
+.back-to-top:hover::after {
+    border-bottom-color: rgba(255, 255, 255, 0.9);
+}
+
 /* 头部容器样式 */
 .header-container {
     display: flex;

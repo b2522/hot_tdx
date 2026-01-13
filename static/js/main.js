@@ -1572,6 +1572,19 @@ function updatePlateStats() {
                 var plateCell = document.createElement('td');
                 plateCell.textContent = item.plate;
                 plateCell.className = 'plate-name';
+                plateCell.style.cursor = 'pointer';
+                plateCell.title = '点击筛选此题材';
+                
+                // 添加点击事件，点击题材名称时触发筛选功能
+                plateCell.addEventListener('click', function() {
+                    // 在题材筛选框中填入题材名称并触发筛选
+                    const plateFilter = document.getElementById('plateFilter');
+                    if (plateFilter) {
+                        plateFilter.value = item.plate;
+                        // 触发筛选功能
+                        filterByPlate(item.plate);
+                    }
+                });
                 
                 // 创建数量单元格
                 var countCell = document.createElement('td');
@@ -1651,21 +1664,24 @@ function searchPlate() {
             // 渲染搜索结果到左侧表格
             Array.prototype.forEach.call(data, function(stock) {
                 var row = document.createElement('tr');
-                var link = 'https://xuangutong.com.cn/stock/' + stock.code_part + '.' + stock.market.toUpperCase();
+                row.onclick = function() {
+                    linkToTongDaXin(stock.code_part);
+                };
+                row.style.cursor = 'pointer';
                 var codeClass = stock.code_part.startsWith('3') ? 'orange-code' : '';
                 var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
                 row.innerHTML = 
-                    '<td><a href="' + link + '" target="_blank" class="' + nameClass + '">' + stock.name + '</a></td>' +
-                    '<td><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
-                    '<td class="price"></td>' +
-                    '<td class="change-percentage"></td>' +
-                    '<td class="amount"></td>' +
-                    '<td class="value"></td>' +
-                    '<td style="display: none;" class="' + codeClass + '">' + stock.code_part + '</td>' +
-                    '<td style="display: none;">' + stock.market + '</td>' +
-                    '<td>' + (stock.m_days_n_boards ? '<span class="days-boards-tag">' + stock.m_days_n_boards + '</span>' : stock.m_days_n_boards) + '</td>' +
-                    '<td>' + (stock.description ? stock.description.substring(0, 100) + (stock.description.length > 100 ? '...' : '') : '') + '</td>' +
-                    '<td class="plate-column">' + stock.plates + '</td>';
+                    '<td class="' + nameClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.name + '</td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00%</td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
+                    '<td style="display: none;" class="' + codeClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.code_part + '</td>' +
+                    '<td style="display: none;" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.market + '</td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + (stock.m_days_n_boards ? '<span class="days-boards-tag">' + stock.m_days_n_boards + '</span>' : stock.m_days_n_boards) + '</td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + (stock.description ? stock.description.substring(0, 100) + (stock.description.length > 100 ? '...' : '') : '') + '</td>' +
+                    '<td class="plate-column" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.plates + '</td>';
                 
                 // 强制设置题材列宽度
                 var plateColumn = row.querySelector('td.plate-column');
