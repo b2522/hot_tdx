@@ -672,37 +672,29 @@ th:nth-child(10) .filter-input {
 }
 
 /* 刷新按钮样式 */
-.refresh-button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    background-color: #2196F3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
+.refresh-button { 
+    background-color: #4CAF50; 
+    color: white; 
+    border: none; 
+    padding: 5px 10px; 
+    cursor: pointer; 
+    font-size: 12px; 
+    border-radius: 3px; 
     transition: all 0.3s ease;
     text-decoration: none;
     font-weight: 500;
     height: fit-content;
     white-space: nowrap;
-}
+} 
 
-.refresh-button:hover {
-    background-color: #1976D2;
+.refresh-button:hover { 
+    background-color: #45a049; 
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .refresh-button:active {
     transform: translateY(0);
-}
-
-.refresh-icon {
-    font-size: 16px;
-    line-height: 1;
 }
 
 /* 返回顶部按钮样式 */
