@@ -1673,8 +1673,8 @@ function searchPlate() {
                 row.innerHTML = 
                     '<td class="' + nameClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.name + '</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
-                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
-                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00%</td>' +
+                    '<td class="price" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
+                    '<td class="change-percentage" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00%</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
                     '<td style="display: none;" class="' + codeClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.code_part + '</td>' +
