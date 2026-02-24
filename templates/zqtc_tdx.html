@@ -44,12 +44,13 @@
             overflow-x: hidden;
         }
         body {
+            font-family: "Microsoft YaHei", "微软雅黑", SimSun, "宋体", sans-serif;
             margin: 0;
-            padding: 0;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-            box-sizing: border-box;
+            padding: 5px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            width: 900px;
+            margin: 0 auto;
         }
         .header-container {
             display: flex;
@@ -64,31 +65,21 @@
         }
         .content {
             display: flex;
-            gap: 20px;
-            width: 100%;
-            box-sizing: border-box;
+            gap: 2px;
         }
         .left-panel {
-            width: 160px;
-            padding: 0;
+            width: 280px;
         }
         .right-panel {
             flex: 1;
             min-height: 400px;
             margin-left: 0;
-            padding: 0;
-            box-sizing: border-box;
-            overflow-x: hidden;
-        }
-        .section {
-            margin: 0;
-            padding: 0;
         }
         table {
             border-collapse: collapse;
-            margin: 0;
+            margin: 5px 0;
             font-size: 14px;
-            table-layout: auto;
+            table-layout: fixed;
             width: 100%;
         }
         th, td {
@@ -100,16 +91,11 @@
         th {
             background-color: var(--table-header-bg);
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             padding: 5px 3px;
-            font-weight: normal;
         }
         td.description-column {
             text-align: left;
-            font-size: 14px;
-        }
-        td.price-column, td.change-column {
-            font-size: 14px;
         }
         tr:nth-child(even) {
             background-color: var(--table-row-even);
@@ -137,17 +123,17 @@
         
         .right-table { 
             width: 100%;
-            table-layout: auto;
-            box-sizing: border-box;
         }
-        .name-column { width: 60px; min-width: 60px; }
-        .boards-column { width: 72px; min-width: 72px; }
-        .price-column { width: 42px; min-width: 42px; }
-        .change-column { width: 42px; min-width: 42px; }
-        .time-column { width: 60px; min-width: 60px; }
-        .amount-column { width: 60px; min-width: 60px; }
-        .value-column { width: 60px; min-width: 60px; }
-        .description-column { flex: 1; min-width: 106px; width: auto; }
+        .code-column { width: 70px; }
+        .name-column { width: 60px; }
+        .price-column { width: 60px; }
+        .change-column { width: 60px; }
+        .time-column { width: 60px; }
+        .amount-column { width: 80px; }
+        .value-column { width: 80px; }
+        .turnover-column { width: 60px; }
+        .boards-column { width: 70px; }
+        .description-column { width: 200px; }
         
         .sortable {
             cursor: pointer;
@@ -179,7 +165,8 @@
             padding: 20px;
         }
         
-        .refresh-btn {
+        .refresh-btn,
+        .refresh-button {
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -188,7 +175,8 @@
             font-size: 12px;
             border-radius: 3px;
         }
-        .refresh-btn:hover {
+        .refresh-btn:hover,
+        .refresh-button:hover {
             background-color: #45a049;
         }
         
@@ -532,7 +520,14 @@
         }
         
         function formatChangeFromAPI(rate) {
-            return rate.toFixed(2) + '%';
+            // API返回的涨幅可能是小数形式(0.0999)或百分比形式(9.99)
+            // 如果rate大于10，说明已经是百分比形式，直接格式化
+            // 否则需要乘以100转换为百分比
+            if (Math.abs(rate) >= 10) {
+                return rate.toFixed(2) + '%';
+            } else {
+                return (rate * 100).toFixed(2) + '%';
+            }
         }
         
         function formatTurnover(rate) {
@@ -867,12 +862,7 @@
                     
                     console.log(`Updated with real-time data: price=${rtData.price}, change=${rtData.change}`);
                 } else {
-                    const currentPrice = parseFloat(priceCell.textContent);
-                    const currentChange = parseFloat(changeCell.textContent);
-                    priceCell.textContent = currentPrice.toFixed(2);
-                    changeCell.textContent = formatChange(currentChange);
-                    changeCell.style.color = currentChange > 0 ? '#ff4d4d' : '#4CAF50';
-                    
+                    // 没有实时数据时，保持原有显示不变
                     console.log(`No real-time data, keeping existing values`);
                 }
                 
