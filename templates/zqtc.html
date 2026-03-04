@@ -27,68 +27,62 @@
             padding: 5px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            width: 100%;
-            max-width: 100%;
+            width: 900px;
             margin: 0 auto;
         }
         .container {
             width: 100%;
-            max-width: 100%;
             margin: 0 auto;
             background-color: var(--container-bg);
             padding: 8px;
             border-radius: 3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.3);
             font-size: 12px;
-            box-sizing: border-box;
-            overflow-x: hidden;
         }
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-            box-sizing: border-box;
+        h1 {
+            text-align: center;
+            color: var(--header-color);
+            border-bottom: 1px solid #4CAF50;
+            padding-bottom: 3px;
+            font-size: 16px;
+            margin: 5px 0;
         }
         .header-container {
             display: flex;
-            justify-content: flex-start;
-            align-items: flex-start;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 10px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid var(--border-color);
-            flex-wrap: wrap;
-            gap: 10px;
+        }
+        .date-title {
+            flex: 1;
+            text-align: left;
+            color: var(--header-color);
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .concept-title {
+            flex: 1;
+            text-align: right;
+            color: red;
+            font-size: 13px;
         }
         .content {
             display: flex;
-            gap: 20px;
-            width: 100%;
-            box-sizing: border-box;
+            gap: 2px;
         }
         .left-panel {
-            width: 160px;
-            padding: 0;
+            width: 280px;
         }
         .right-panel {
             flex: 1;
             min-height: 400px;
             margin-left: 0;
-            padding: 0;
-            box-sizing: border-box;
-            overflow-x: hidden;
-        }
-        .section {
-            margin: 0;
-            padding: 0;
         }
         table {
             border-collapse: collapse;
-            margin: 0;
+            margin: 5px 0;
             font-size: 14px;
-            table-layout: auto;
+            table-layout: fixed;
             width: 100%;
         }
         th, td {
@@ -100,16 +94,11 @@
         th {
             background-color: var(--table-header-bg);
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             padding: 5px 3px;
-            font-weight: normal;
         }
         td.description-column {
             text-align: left;
-            font-size: 14px;
-        }
-        td.price-column, td.change-column {
-            font-size: 14px;
         }
         tr:nth-child(even) {
             background-color: var(--table-row-even);
@@ -137,17 +126,17 @@
         
         .right-table { 
             width: 100%;
-            table-layout: auto;
-            box-sizing: border-box;
         }
-        .name-column { width: 60px; min-width: 60px; }
-        .boards-column { width: 72px; min-width: 72px; }
-        .price-column { width: 42px; min-width: 42px; }
-        .change-column { width: 42px; min-width: 42px; }
-        .time-column { width: 60px; min-width: 60px; }
-        .amount-column { width: 60px; min-width: 60px; }
-        .value-column { width: 60px; min-width: 60px; }
-        .description-column { flex: 1; min-width: 106px; width: auto; }
+        .code-column { width: 70px; }
+        .name-column { width: 60px; }
+        .price-column { width: 60px; }
+        .change-column { width: 60px; }
+        .time-column { width: 60px; }
+        .amount-column { width: 80px; }
+        .value-column { width: 80px; }
+        .turnover-column { width: 60px; }
+        .boards-column { width: 70px; }
+        .description-column { width: 200px; }
         
         .sortable {
             cursor: pointer;
@@ -195,11 +184,8 @@
         .date-selector {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 5px;
             margin-left: 10px;
-            flex-wrap: wrap;
-            width: 100%;
-            padding: 5px 0;
         }
         
         .date-selector input[type="date"] {
@@ -207,7 +193,7 @@
             color: #ccc;
             border: 1px solid #3f3f46;
             padding: 3px 5px;
-            font-size: 14px;
+            font-size: 12px;
             border-radius: 3px;
             cursor: pointer;
         }
@@ -220,7 +206,7 @@
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         .date-selector input[type="date"] {
             padding: 3px 5px;
@@ -237,20 +223,6 @@
         .date-selector input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
-        }
-        .filter-input {
-            margin: 0 auto;
-            display: block;
-            padding: 5px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            text-align: center;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            width: 100%;
-            max-width: 150px;
-            box-sizing: border-box;
-            font-size: 14px;
         }
         .font-size-control {
             display: flex;
@@ -302,25 +274,22 @@
 </head>
 <body>
     <div class="container">
+        <h1>最强题材解读</h1>
+        
         <div class="header-container">
             <div class="date-selector">
-                <span class="market-label" style="font-size: 14px;">
-                    <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
-                </span>
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <button onclick="location.reload()" class="refresh-button" title="刷新页面" style="background-color: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
-                    刷新
-                </button>
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <input type="date" id="datePicker" placeholder="选择日期" onchange="onDateChange()" class="filter-input">
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <a href="/" style="color: white !important; text-decoration: none !important; font-size: 14px;">所有股票同列</a>
-                <span style="color: var(--text-color); font-size: 14px;"> | </span>
-                <a href="/zqtc_tdx" style="color: white !important; text-decoration: none !important; font-size: 14px;">按题材同列</a>
-                <div style="margin-left: auto; color: orange !important; font-size: 14px;">
-                    公众号：别浪 好好学习
-                </div>
+                <input type="date" id="datePicker" placeholder="年/月/日" onchange="onDateChange()">
             </div>
+            <div style="font-size: 14px; color: #cccccc; margin-left: 10px;">
+               <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>                
+            </div>
+            <div class="font-size-control">
+                <button class="font-size-btn" onclick="changeFontSize(-1)">--</button>
+                <button class="font-size-btn" onclick="changeFontSize(0)">A</button>
+                <button class="font-size-btn" onclick="changeFontSize(1)">++</button>
+                <span class="font-size-display" id="fontSizeDisplay">14px</span>
+            </div>
+            <div class="concept-title" id="detailTitle">请选择题材</div>
         </div>
         
         <div class="content">
@@ -350,7 +319,7 @@
                                 <th class="price-column">现价</th>
                                 <th class="change-column sortable" onclick="sortByChange()">涨幅<span id="changeSortIndicator" class="sort-indicator"></span></th>
                                 <th class="time-column">涨停时间</th>
-                                <th class="amount-column sortable" onclick="sortByAmount()">换手率<span id="amountSortIndicator" class="sort-indicator"></span></th>
+                                <th class="amount-column sortable" onclick="sortByAmount()">成交额<span id="amountSortIndicator" class="sort-indicator"></span></th>
                                 <th class="value-column">流通市值</th>
                                 <th class="description-column">涨停原因</th>
                             </tr>
@@ -363,7 +332,9 @@
             </div>
         </div>
         
-        
+        <div class="footer">
+            【公众号：别浪 好好学习】 生成时间: <span id="generateTime"></span>
+        </div>
     </div>
     
     <script>
@@ -584,7 +555,7 @@
             
             const secIds = codes.map(code => getSecId(code)).join(',');
             // 使用后端代理API解决CORS跨域问题
-            const API_URL = `/api/proxy-eastmoney-stock-data?secids=${secIds}`;
+            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
             console.log('Fetching real-time data from:', API_URL);
             
             try {
@@ -639,8 +610,8 @@
             const conceptBody = document.getElementById('conceptBody');
             const detailBody = document.getElementById('detailBody');
             
-            conceptBody.innerHTML = '<tr><td colspan="2" class="loading">加载中...</td></tr>';
-            detailBody.innerHTML = '<tr><td colspan="8" class="loading">请选择题材查看详情</td></tr>';
+            conceptBody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="7" class="loading">请选择题材查看详情</td></tr>';
             
             try {
                 const response = await fetch(API_URL);
@@ -650,7 +621,8 @@
                     allStocks = data.data.items;
                     
                     if (allStocks.length === 0) {
-                        conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无数据</td></tr>';
+                        conceptBody.innerHTML = '<tr><td colspan="3" class="error">该日期无数据</td></tr>';
+                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                         return;
                     }
                     
@@ -699,12 +671,15 @@
                     
                     if (sortedConcepts.length === 0) {
                         conceptBody.innerHTML = '<tr><td colspan="2" class="error">该日期无题材数据</td></tr>';
+                        document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                         return;
                     }
                     
                     renderConceptTable(sortedConcepts);
+                    
+                    document.getElementById('generateTime').textContent = formatDateTime(Math.floor(Date.now() / 1000));
                 } else {
-                    conceptBody.innerHTML = '<tr><td colspan="2" class="error">数据加载失败</td></tr>';
+                    conceptBody.innerHTML = '<tr><td colspan="3" class="error">数据加载失败</td></tr>';
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -727,17 +702,18 @@
                 countCell.textContent = stocks.length;
                 
                 row.addEventListener('click', function() {
-                        if (selectedRow) {
-                            selectedRow.classList.remove('selected-row');
-                        }
-                        this.classList.add('selected-row');
-                        selectedRow = this;
-                        
-                        currentSortField = null;
-                        sortDirection = 'desc';
-                        updateSortIndicators();
-                        renderDetailTable(stocks);
-                    });
+                    if (selectedRow) {
+                        selectedRow.classList.remove('selected-row');
+                    }
+                    this.classList.add('selected-row');
+                    selectedRow = this;
+                    
+                    document.getElementById('detailTitle').textContent = conceptName + ' 相关股票';
+                    currentSortField = null;
+                    sortDirection = 'desc';
+                    updateSortIndicators();
+                    renderDetailTable(stocks);
+                });
             });
         }
         
@@ -805,9 +781,8 @@
                 }
                 
                 const amountCell = row.insertCell(5);
-                // 显示换手率（转换为百分数）
-                if (stock.turnover !== undefined && stock.turnover !== null) {
-                    amountCell.textContent = (stock.turnover * 100).toFixed(2) + '%';
+                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
+                    amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
                 } else {
                     amountCell.textContent = '-';
                 }
@@ -853,10 +828,9 @@
                 
                 console.log(`Updating row ${index}: stockCode=${stockCode}, cleanCode=${cleanCode}, rtData=`, realTimeData[cleanCode]);
                 
-                if (row.cells.length < 6) return;
-                
                 const priceCell = row.cells[2];
                 const changeCell = row.cells[3];
+                const amountCell = row.cells[5];
                 
                 if (realTimeData[cleanCode]) {
                     const rtData = realTimeData[cleanCode];
@@ -878,7 +852,12 @@
                     console.log(`No real-time data, keeping existing values`);
                 }
                 
-                // 保持换手率显示（不从实时数据更新）
+                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
+                    amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
+                    console.log(`Updated amount: ${realTimeData[cleanCode].amount}`);
+                } else {
+                    amountCell.textContent = '-';
+                }
             });
         }
         
@@ -894,16 +873,10 @@
         function sortByBoards() {
             if (currentStocks.length === 0) return;
             
-            if (currentSortField === 'boards') {
-                sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
-            } else {
-                sortDirection = 'desc';
-            }
-            
             const sortedStocks = [...currentStocks].sort((a, b) => {
                 const boardsA = parseBoards(a.boards);
                 const boardsB = parseBoards(b.boards);
-                return sortDirection === 'desc' ? boardsB - boardsA : boardsA - boardsB;
+                return boardsB - boardsA;
             });
             
             currentSortField = 'boards';
@@ -951,15 +924,20 @@
                 sortDirection = 'desc';
             }
             
-            // 按换手率排序
+            const codes = currentStocks.map(stock => stock.code);
+            const realTimeData = await fetchRealTimeData(codes);
+            
             const sortedStocks = [...currentStocks].sort((a, b) => {
-                const turnoverA = a.turnover || 0;
-                const turnoverB = b.turnover || 0;
+                const cleanCodeA = a.code.includes('.') ? a.code.split('.')[0] : a.code;
+                const cleanCodeB = b.code.includes('.') ? b.code.split('.')[0] : b.code;
+                
+                const amountA = realTimeData[cleanCodeA] && realTimeData[cleanCodeA].amount ? realTimeData[cleanCodeA].amount : 0;
+                const amountB = realTimeData[cleanCodeB] && realTimeData[cleanCodeB].amount ? realTimeData[cleanCodeB].amount : 0;
                 
                 if (sortDirection === 'desc') {
-                    return turnoverB - turnoverA;
+                    return amountB - amountA;
                 } else {
-                    return turnoverA - turnoverB;
+                    return amountA - amountB;
                 }
             });
             
@@ -978,7 +956,7 @@
             amountIndicator.textContent = '';
             
             if (currentSortField === 'boards') {
-                boardsIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
+                boardsIndicator.textContent = '▼';
             } else if (currentSortField === 'change') {
                 changeIndicator.textContent = sortDirection === 'desc' ? '▼' : '▲';
             } else if (currentSortField === 'amount') {
@@ -1006,42 +984,12 @@
                 autoRefreshTimer = null;
             }
         }
-
+        
         window.onload = function() {
             initDatePicker();
             fetchData();
             startAutoRefresh();
         };
-        
-        // 返回顶部按钮功能
-        document.addEventListener('DOMContentLoaded', function() {
-            const backToTopBtn = document.getElementById('backToTopBtn');
-            
-            if (!backToTopBtn) return;
-            
-            // 监听页面滚动事件
-            window.addEventListener('scroll', function() {
-                // 当滚动超过200像素时显示按钮，否则隐藏
-                if (window.pageYOffset > 200) {
-                    backToTopBtn.classList.add('show');
-                } else {
-                    backToTopBtn.classList.remove('show');
-                }
-            });
-            
-            // 点击按钮时平滑滚动到顶部
-            backToTopBtn.addEventListener('click', function() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-        });
     </script>
-    
-    <!-- 返回顶部按钮 -->
-    <button id="backToTopBtn" class="back-to-top" title="返回顶部">
-    </button>
-    
 </body>
 </html>
