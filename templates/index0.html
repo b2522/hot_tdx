@@ -40,9 +40,7 @@
                 </button>
                     <span style="color: var(--text-color);"> | </span>
                     <a href="/zqtc_tdx" style="color: var(--text-color); text-decoration: none; font-size: 14px;">按题材同列</a>
-                    <a href="javascript:void(0)" onclick="changeDate(-1)" style="color: var(--text-color); text-decoration: underline; font-size: 14px; margin-right: 5px; display: inline-block; line-height: 24px;">前一天</a>
-                    <input type="date" id="dateFilter" placeholder="选择日期" onchange="filterByDate(this.value)" class="filter-input" style="margin: 0; padding: 2px 5px; display: inline-block; width: auto; max-width: 130px; vertical-align: middle;">
-                    <a href="javascript:void(0)" onclick="changeDate(1)" style="color: var(--text-color); text-decoration: underline; font-size: 14px; margin-left: 5px; display: inline-block; line-height: 24px;">后一天</a>
+                    <input type="date" id="dateFilter" placeholder="选择日期" onchange="filterByDate(this.value)" class="filter-input">
                     <div class="plate-search-container-inline">
                         <input type="text" id="plateSearchInput" placeholder="搜索所有题材" class="plate-search-input-inline">
                         <button onclick="searchPlate()" class="plate-search-button-inline">GO</button>
@@ -153,31 +151,6 @@
             }
             const link = `http://www.treeid/code_${cleanCode}`;
             window.location.href = link;
-        }
-        
-        function changeDate(days) {
-            const datePicker = document.getElementById('dateFilter');
-            const currentDate = datePicker.value;
-            
-            if (!currentDate) {
-                // 如果没有选择日期，使用今天
-                const today = new Date();
-                const newDate = new Date(today);
-                newDate.setDate(today.getDate() + days);
-                
-                const formattedDate = newDate.toISOString().split('T')[0];
-                datePicker.value = formattedDate;
-                filterByDate(formattedDate);
-            } else {
-                // 调整当前选择的日期
-                const selectedDate = new Date(currentDate);
-                const newDate = new Date(selectedDate);
-                newDate.setDate(selectedDate.getDate() + days);
-                
-                const formattedDate = newDate.toISOString().split('T')[0];
-                datePicker.value = formattedDate;
-                filterByDate(formattedDate);
-            }
         }
         
         // 返回顶部按钮功能

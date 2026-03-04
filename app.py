@@ -374,19 +374,19 @@ def api_crawl_stock_data():
 
 # 初始化定时任务调度器（仅在本地开发环境使用）
 # Vercel环境下使用Cron Jobs替代
-# try:
-#     if os.environ.get('VERCEL_ENV') is None:  # 仅在本地环境启动
-#         scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
-#         # 添加定时任务：周一到周五15:10执行
-#         scheduler.add_job(scheduled_crawl, 'cron', hour=15, minute=10, second=0, day_of_week='0-4')
-#         # 添加定时任务：周一到周五16:15执行
-#         scheduler.add_job(scheduled_crawl, 'cron', hour=16, minute=15, second=0, day_of_week='0-4')
-#         scheduler.start()
-#         logging.info("定时任务调度器已启动（本地开发环境）")
-#     else:
-#         logging.info("Vercel环境下跳过定时任务调度器启动")
-# except Exception as e:
-#     logging.error(f"启动定时任务调度器失败: {e}")
+try:
+    if os.environ.get('VERCEL_ENV') is None:  # 仅在本地环境启动
+        scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
+        # 添加定时任务：周一到周五15:30执行
+        scheduler.add_job(scheduled_crawl, 'cron', hour=15, minute=30, second=0, day_of_week='0-4')
+        # 添加定时任务：周一到周五16:30执行
+        scheduler.add_job(scheduled_crawl, 'cron', hour=16, minute=30, second=0, day_of_week='0-4')
+        scheduler.start()
+        logging.info("定时任务调度器已启动（本地开发环境）")
+    else:
+        logging.info("Vercel环境下跳过定时任务调度器启动")
+except Exception as e:
+    logging.error(f"启动定时任务调度器失败: {e}")
 
 @app.route('/api/proxy-eastmoney-stock-data')
 def proxy_eastmoney_stock_data():
@@ -518,6 +518,291 @@ def proxy_eastmoney_kline_data():
         print(f"代理K线数据处理异常: {str(e)}")
         return jsonify({'error': '服务器内部错误'}), 500
 
+# ==================== 股票跟踪功能相关路由 ====================
+
+@app.route('/followadmin')
+def follow_admin():
+    """股票跟踪后台管理页面"""
+    return render_template('followadmin.html')
+
+@app.route('/follow')
+def follow():
+    """股票跟踪前台展示页面"""
+    return render_template('follow.html')
+
+@app.route('/api/follow/tabs')
+def api_follow_tabs():
+    """获取所有跟踪分类"""
+    try:
+        tabs = db.get_follow_tabs()
+        return jsonify({'status': 'success', 'data': tabs})
+    except Exception as e:
+        logging.error(f"获取跟踪分类失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/tabs', methods=['POST'])
+def api_create_follow_tab():
+    """创建跟踪分类"""
+    try:
+        data = request.json
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({'status': 'error', 'message': '分类名称不能为空'}), 400
+        
+        # 获取当前最大排序值
+        tabs = db.get_follow_tabs()
+        max_sort = max([tab.get('sort_order', 0) for tab in tabs]) if tabs else 0
+        
+        tab_id = db.create_follow_tab(name, max_sort + 1)
+        
+        if tab_id:
+            return jsonify({'status': 'success', 'data': {'id': tab_id, 'name': name}})
+        else:
+            return jsonify({'status': 'error', 'message': '创建失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"创建跟踪分类失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/tabs/<int:tab_id>', methods=['PUT'])
+def api_update_follow_tab(tab_id):
+    """更新跟踪分类"""
+    try:
+        data = request.json
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return jsonify({'status': 'error', 'message': '分类名称不能为空'}), 400
+        
+        success = db.update_follow_tab(tab_id, name)
+        
+        if success:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': '更新失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"更新跟踪分类失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/tabs/<int:tab_id>', methods=['DELETE'])
+def api_delete_follow_tab(tab_id):
+    """删除跟踪分类"""
+    try:
+        success = db.delete_follow_tab(tab_id)
+        
+        if success:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': '删除失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"删除跟踪分类失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/stocks/<int:tab_id>')
+def api_follow_stocks(tab_id):
+    """获取指定分类下的所有股票"""
+    try:
+        stocks = db.get_follow_stocks(tab_id)
+        return jsonify({'status': 'success', 'data': stocks})
+    except Exception as e:
+        logging.error(f"获取跟踪股票失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/stocks', methods=['POST'])
+def api_create_follow_stock():
+    """创建跟踪股票"""
+    try:
+        data = request.json
+        tab_id = data.get('tab_id')
+        plate = data.get('plate', '').strip()
+        name = data.get('name', '').strip()
+        code = data.get('code', '').strip()
+        
+        if not tab_id or not name or not code:
+            return jsonify({'status': 'error', 'message': '缺少必要参数'}), 400
+        
+        # 验证代码格式（6位数字）
+        if not code.isdigit() or len(code) != 6:
+            return jsonify({'status': 'error', 'message': '股票代码必须是6位数字'}), 400
+        
+        stock_id = db.create_follow_stock(tab_id, plate, name, code)
+        
+        if stock_id:
+            return jsonify({'status': 'success', 'data': {'id': stock_id}})
+        else:
+            return jsonify({'status': 'error', 'message': '创建失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"创建跟踪股票失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/stocks/<int:stock_id>', methods=['PUT'])
+def api_update_follow_stock(stock_id):
+    """更新跟踪股票"""
+    try:
+        data = request.json
+        plate = data.get('plate', '').strip()
+        name = data.get('name', '').strip()
+        code = data.get('code', '').strip()
+        
+        if not name or not code:
+            return jsonify({'status': 'error', 'message': '缺少必要参数'}), 400
+        
+        # 验证代码格式（6位数字）
+        if not code.isdigit() or len(code) != 6:
+            return jsonify({'status': 'error', 'message': '股票代码必须是6位数字'}), 400
+        
+        success = db.update_follow_stock(stock_id, plate, name, code)
+        
+        if success:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': '更新失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"更新跟踪股票失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/stocks/<int:stock_id>', methods=['DELETE'])
+def api_delete_follow_stock(stock_id):
+    """删除跟踪股票"""
+    try:
+        success = db.delete_follow_stock(stock_id)
+        
+        if success:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': '删除失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"删除跟踪股票失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/stocks/reorder', methods=['POST'])
+def api_reorder_follow_stocks():
+    """保存股票行顺序"""
+    try:
+        data = request.json
+        tab_id = data.get('tab_id')
+        orders = data.get('orders', [])
+        
+        if not tab_id or not orders:
+            return jsonify({'status': 'error', 'message': '缺少必要参数'}), 400
+        
+        success = db.update_follow_stock_orders(orders)
+        
+        if success:
+            return jsonify({'status': 'success'})
+        else:
+            return jsonify({'status': 'error', 'message': '保存顺序失败'}), 500
+            
+    except Exception as e:
+        logging.error(f"保存股票顺序失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/stocks/all')
+def api_all_follow_stocks():
+    """获取所有跟踪股票"""
+    try:
+        stocks = db.get_all_follow_stocks()
+        return jsonify({'status': 'success', 'data': stocks})
+    except Exception as e:
+        logging.error(f"获取所有跟踪股票失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/realtime-prices')
+def api_follow_realtime_prices():
+    """获取跟踪股票的实时价格"""
+    try:
+        # 获取所有跟踪股票
+        stocks = db.get_all_follow_stocks()
+        
+        if not stocks:
+            return jsonify({'status': 'success', 'data': []})
+        
+        # 构建secids参数
+        secids = []
+        for stock in stocks:
+            code = stock['code']
+            # 根据代码开头判断市场
+            if code[0] == '6':
+                market = '1'  # 沪市
+            else:
+                market = '0'  # 深市
+            secids.append(f"{market}.{code}")
+        
+        secids_str = ','.join(secids)
+        
+        # 构建API URL
+        api_url = f"https://push2.eastmoney.com/api/qt/ulist.np/get"
+        api_url += f"?fields=f2,f3,f6,f12,f14"
+        api_url += f"&fltt=2"
+        api_url += f"&secids={secids_str}"
+        
+        # 设置请求头
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Referer': 'https://data.eastmoney.com/',
+            'Accept': 'application/json, text/javascript, */*; q=0.01'
+        }
+        
+        # 发送请求
+        response = requests.get(api_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        result = response.json()
+        
+        # 解析返回的数据并更新数据库
+        if result and 'data' in result and 'diff' in result['data']:
+            stock_updates = []
+            
+            for item in result['data']['diff']:
+                code = str(item.get('f12', ''))
+                price = item.get('f2', 0)
+                change_percent = item.get('f3', 0)
+                
+                if code:
+                    stock_updates.append({
+                        'code': code,
+                        'price': price,
+                        'change_percent': change_percent
+                    })
+            
+            # 批量更新数据库
+            if stock_updates:
+                db.update_follow_stock_prices(stock_updates)
+            
+            return jsonify({'status': 'success', 'data': result['data']['diff']})
+        else:
+            return jsonify({'status': 'success', 'data': []})
+            
+    except Exception as e:
+        logging.error(f"获取实时价格失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/follow/search-code')
+def api_search_stock_code():
+    """根据股票名称搜索股票代码"""
+    try:
+        name = request.args.get('name', '').strip()
+        
+        if not name:
+            return jsonify({'status': 'error', 'message': '股票名称不能为空'}), 400
+        
+        code = db.get_stock_code_by_name(name)
+        
+        if code:
+            return jsonify({'status': 'success', 'data': {'code': code}})
+        else:
+            return jsonify({'status': 'error', 'message': '未找到匹配的股票'}), 404
+            
+    except Exception as e:
+        logging.error(f"搜索股票代码失败: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 def generate_mock_kline_data(secid):
     """生成模拟的K线图数据"""
     # 生成日期
@@ -569,6 +854,7 @@ def generate_mock_kline_data(secid):
 print("Initializing database...")
 try:
     db.init_db()
+    db.init_follow_tables()  # 初始化股票跟踪相关表
     print("Database initialized successfully")
 except Exception as e:
     print(f"Database initialization failed: {e}")
@@ -586,7 +872,7 @@ if __name__ == '__main__':
     print("App will be available at http://127.0.0.1:5000/")
     try:
         # 本地开发时使用debug模式
-        app.run(debug=True, host='127.0.0.1', port=5000)
+        app.run(debug=True, host='0.0.0.0', port=15000)
     except Exception as e:
         print(f"Flask app failed to start: {e}")
         import traceback

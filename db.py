@@ -853,3 +853,405 @@ def get_stock_history_data(stock_code):
         conn.close()
     
     return history_data
+
+# ==================== 股票跟踪功能相关函数 ====================
+
+def init_follow_tables():
+    """初始化股票跟踪相关的表"""
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # 创建tabs表（跟踪分类表）
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS follow_tabs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # 创建stocks表（跟踪股票表）
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS follow_stocks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tab_id INTEGER NOT NULL,
+            plate TEXT,
+            name TEXT NOT NULL,
+            code TEXT NOT NULL,
+            price REAL DEFAULT 0,
+            change_percent REAL DEFAULT 0,
+            sort_order INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (tab_id) REFERENCES follow_tabs(id) ON DELETE CASCADE
+        )
+        ''')
+        
+        # 创建索引
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_follow_stocks_tab_id ON follow_stocks(tab_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_follow_stocks_code ON follow_stocks(code)')
+        
+        # 检查并添加 sort_order 列（如果表已存在但缺少该列）
+        try:
+            cursor.execute('SELECT sort_order FROM follow_stocks LIMIT 1')
+        except sqlite3.OperationalError:
+            # 列不存在，添加它
+            cursor.execute('ALTER TABLE follow_stocks ADD COLUMN sort_order INTEGER DEFAULT 0')
+            logging.info("成功添加 sort_order 列到 follow_stocks 表")
+        
+        conn.commit()
+        logging.info("股票跟踪相关表初始化完成")
+        
+    except Exception as e:
+        logging.error(f"初始化股票跟踪表失败: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+def get_follow_tabs():
+    """获取所有跟踪分类"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT id, name, sort_order FROM follow_tabs ORDER BY sort_order ASC, id ASC')
+        rows = cursor.fetchall()
+        
+        tabs = []
+        for row in rows:
+            tabs.append({
+                "id": row[0],
+                "name": row[1],
+                "sort_order": row[2]
+            })
+        
+        logging.info(f"成功获取{len(tabs)}个跟踪分类")
+        return tabs
+        
+    except Exception as e:
+        logging.error(f"获取跟踪分类失败: {e}")
+        return []
+    finally:
+        conn.close()
+
+def create_follow_tab(name, sort_order=0):
+    """创建跟踪分类"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('INSERT INTO follow_tabs (name, sort_order) VALUES (?, ?)', (name, sort_order))
+        conn.commit()
+        
+        tab_id = cursor.lastrowid
+        logging.info(f"成功创建跟踪分类: {name}, ID: {tab_id}")
+        return tab_id
+        
+    except Exception as e:
+        logging.error(f"创建跟踪分类失败: {e}")
+        return None
+    finally:
+        conn.close()
+
+def update_follow_tab(tab_id, name):
+    """更新跟踪分类名称"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('UPDATE follow_tabs SET name = ? WHERE id = ?', (name, tab_id))
+        conn.commit()
+        
+        logging.info(f"成功更新跟踪分类: ID {tab_id}, 新名称: {name}")
+        return True
+        
+    except Exception as e:
+        logging.error(f"更新跟踪分类失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def delete_follow_tab(tab_id):
+    """删除跟踪分类"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # 先删除该分类下的所有股票
+        cursor.execute('DELETE FROM follow_stocks WHERE tab_id = ?', (tab_id,))
+        # 再删除分类
+        cursor.execute('DELETE FROM follow_tabs WHERE id = ?', (tab_id,))
+        
+        conn.commit()
+        logging.info(f"成功删除跟踪分类: ID {tab_id}")
+        return True
+        
+    except Exception as e:
+        logging.error(f"删除跟踪分类失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_follow_stocks(tab_id):
+    """获取指定分类下的所有股票"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        SELECT id, tab_id, plate, name, code, price, change_percent, sort_order
+        FROM follow_stocks
+        WHERE tab_id = ?
+        ORDER BY sort_order ASC, id ASC
+        ''', (tab_id,))
+        
+        rows = cursor.fetchall()
+        
+        stocks = []
+        for row in rows:
+            stocks.append({
+                "id": row[0],
+                "tab_id": row[1],
+                "plate": row[2],
+                "name": row[3],
+                "code": row[4],
+                "price": row[5],
+                "change_percent": row[6],
+                "sort_order": row[7]
+            })
+        
+        logging.info(f"成功获取分类{tab_id}下的{len(stocks)}只股票")
+        return stocks
+        
+    except Exception as e:
+        logging.error(f"获取跟踪股票失败: {e}")
+        return []
+    finally:
+        conn.close()
+
+def create_follow_stock(tab_id, plate, name, code, price=0, change_percent=0):
+    """创建跟踪股票"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        INSERT INTO follow_stocks (tab_id, plate, name, code, price, change_percent)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (tab_id, plate, name, code, price, change_percent))
+        
+        conn.commit()
+        stock_id = cursor.lastrowid
+        logging.info(f"成功创建跟踪股票: {name} ({code}), 分类ID: {tab_id}")
+        return stock_id
+        
+    except Exception as e:
+        logging.error(f"创建跟踪股票失败: {e}")
+        return None
+    finally:
+        conn.close()
+
+def update_follow_stock(stock_id, plate, name, code):
+    """更新跟踪股票信息"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        UPDATE follow_stocks
+        SET plate = ?, name = ?, code = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        ''', (plate, name, code, stock_id))
+        
+        conn.commit()
+        logging.info(f"成功更新跟踪股票: ID {stock_id}")
+        return True
+        
+    except Exception as e:
+        logging.error(f"更新跟踪股票失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def delete_follow_stock(stock_id):
+    """删除跟踪股票"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM follow_stocks WHERE id = ?', (stock_id,))
+        conn.commit()
+        
+        logging.info(f"成功删除跟踪股票: ID {stock_id}")
+        return True
+        
+    except Exception as e:
+        logging.error(f"删除跟踪股票失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def update_follow_stock_prices(stock_updates):
+    """批量更新跟踪股票的价格和涨幅
+    
+    Args:
+        stock_updates: list of dicts with keys: code, price, change_percent
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        for update in stock_updates:
+            code = update.get('code')
+            price = update.get('price', 0)
+            change_percent = update.get('change_percent', 0)
+            
+            if code:
+                cursor.execute('''
+                UPDATE follow_stocks
+                SET price = ?, change_percent = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE code = ?
+                ''', (price, change_percent, code))
+        
+        conn.commit()
+        logging.info(f"成功更新{len(stock_updates)}只股票的价格和涨幅")
+        return True
+        
+    except Exception as e:
+        logging.error(f"更新股票价格失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def update_follow_stock_orders(orders):
+    """批量更新股票的排序顺序
+    
+    Args:
+        orders: list of dicts with keys: id, sort_order
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        for order in orders:
+            stock_id = order.get('id')
+            sort_order = order.get('sort_order', 0)
+            
+            if stock_id is not None:
+                cursor.execute('''
+                UPDATE follow_stocks
+                SET sort_order = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                ''', (sort_order, stock_id))
+        
+        conn.commit()
+        logging.info(f"成功更新{len(orders)}只股票的排序顺序")
+        return True
+        
+    except Exception as e:
+        logging.error(f"更新股票排序失败: {e}")
+        return False
+    finally:
+        conn.close()
+
+def get_all_follow_stocks():
+    """获取所有跟踪股票"""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+        SELECT s.id, s.tab_id, s.plate, s.name, s.code, s.price, s.change_percent, t.name as tab_name
+        FROM follow_stocks s
+        LEFT JOIN follow_tabs t ON s.tab_id = t.id
+        ORDER BY t.sort_order ASC, s.id ASC
+        ''')
+        
+        rows = cursor.fetchall()
+        
+        stocks = []
+        for row in rows:
+            stocks.append({
+                "id": row[0],
+                "tab_id": row[1],
+                "plate": row[2],
+                "name": row[3],
+                "code": row[4],
+                "price": row[5],
+                "change_percent": row[6],
+                "tab_name": row[7]
+            })
+        
+        logging.info(f"成功获取所有{len(stocks)}只跟踪股票")
+        return stocks
+        
+    except Exception as e:
+        logging.error(f"获取所有跟踪股票失败: {e}")
+        return []
+    finally:
+        conn.close()
+
+def get_stock_code_by_name(name):
+    """根据股票名称从数据库或gp_code.txt文件中查找股票代码"""
+    # 首先从gp_code.txt文件中查找
+    try:
+        # 获取db.py所在目录，即项目根目录
+        db_dir = os.path.dirname(os.path.abspath(__file__))
+        gp_code_path = os.path.join(db_dir, 'gp_code.txt')
+        
+        logging.info(f"搜索股票代码 '{name}', gp_code.txt 路径: {gp_code_path}, 文件存在: {os.path.exists(gp_code_path)}")
+        
+        if os.path.exists(gp_code_path):
+            with open(gp_code_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    # 跳过注释和空行
+                    if not line or line.startswith('#') or line.startswith('名称,代码'):
+                        continue
+                    # 解析格式: 股票名称,股票代码
+                    if ',' in line:
+                        stock_name, stock_code = line.split(',', 1)
+                        stock_name = stock_name.strip()
+                        stock_code = stock_code.strip()
+                        # 模糊匹配
+                        if name in stock_name or stock_name in name:
+                            logging.info(f"找到匹配: '{stock_name}' -> '{stock_code}'")
+                            return stock_code
+    except Exception as e:
+        logging.warning(f"从gp_code.txt文件查找股票代码失败: {e}")
+    
+    # 如果文件中未找到，则从数据库中查找
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # 获取最新的股票表
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'stock_%' ORDER BY name DESC LIMIT 1")
+        result = cursor.fetchone()
+        
+        if not result:
+            return None
+        
+        table_name = result[0]
+        
+        # 在该表中查找匹配的股票名称
+        cursor.execute(f"SELECT code FROM {table_name} WHERE name LIKE ?", (f"%{name}%",))
+        rows = cursor.fetchall()
+        
+        if rows:
+            # 返回第一个匹配的股票代码（去掉市场标识）
+            code_with_market = rows[0][0]
+            if "." in code_with_market:
+                return code_with_market.split(".")[0]
+            return code_with_market
+        
+        return None
+        
+    except Exception as e:
+        logging.error(f"根据名称查找股票代码失败: {e}")
+        return None
+    finally:
+        conn.close()

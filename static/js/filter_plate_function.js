@@ -82,8 +82,9 @@ function filterPlateStats(inputValue) {
                     nameCell.appendChild(link);
                     row.appendChild(nameCell);
                     
-                    // 第2列：分时图（保持原表格结构）
+                    // 第2列：分时图（已隐藏）
                     var timeChartCell = document.createElement('td');
+                    timeChartCell.style.display = 'none';
                     var timeChartDiv = document.createElement('div');
                     timeChartDiv.className = 'time-chart';
                     // 提取股票代码中的数字部分，用于分时图绘制

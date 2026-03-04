@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票跟踪管理</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header h1 {
+            margin: 0;
+            flex: 1;
+            font-size: 24px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+        }
+        
+        .btn-danger:hover {
+            background-color: #da190b;
+        }
+        
+        .btn-primary {
+            background-color: #2196F3;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0b7dda;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tab:hover {
+            background-color: #444;
+        }
+        
+        .tab.active {
+            background-color: #2196F3;
+            border-color: #2196F3;
+        }
+        
+        .tab-name {
+            cursor: text;
+            min-width: 50px;
+        }
+        
+        .tab-name:focus {
+            outline: none;
+            background-color: #555;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+        
+        .tab-delete {
+            color: #f44336;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+        
+        .tab-delete:hover {
+            color: #da190b;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e1e1e;
+            table-layout: fixed;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+            word-wrap: break-word;
+            overflow: hidden;
+            vertical-align: middle;
+        }
+
+        th:nth-child(1), td:nth-child(1) { width: 15%; } /* 题材 */
+        th:nth-child(2), td:nth-child(2) { width: 20%; } /* 名称 */
+        th:nth-child(3), td:nth-child(3) { width: 12%; } /* 代码 */
+        th:nth-child(4), td:nth-child(4) { width: 12%; } /* 价格 */
+        th:nth-child(5), td:nth-child(5) { width: 12%; } /* 涨幅 */
+        th:nth-child(6), td:nth-child(6) { width: 29%; } /* 操作 */
+
+        th {
+            background-color: #2d2d2d;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        tr:hover {
+            background-color: #2a2a2a;
+        }
+
+        /* 拖拽相关样式 */
+        tr.dragging {
+            opacity: 0.5;
+            background-color: #3a3a3a;
+        }
+
+        tr.drag-over {
+            border-top: 2px solid #2196F3;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #666;
+            padding: 0 8px;
+            user-select: none;
+        }
+
+        .drag-handle:hover {
+            color: #999;
+        }
+
+        .input-field {
+            padding: 8px 12px;
+            font-size: 14px;
+            line-height: 1.4;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            width: 100%;
+            box-sizing: border-box;
+            height: auto;
+            min-height: unset;
+        }
+
+        /* 表格内的输入框保持与文本一致的行高 */
+        td .input-field {
+            height: 36px;
+            line-height: 20px;
+            padding: 6px 10px;
+            font-size: 14px;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+            color: white;
+        }
+        
+        .action-edit {
+            background-color: #2196F3;
+        }
+        
+        .action-delete {
+            background-color: #f44336;
+        }
+        
+        .action-save {
+            background-color: #4CAF50;
+        }
+        
+        .action-cancel {
+            background-color: #757575;
+        }
+        
+        .add-row {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .add-row h3 {
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .add-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .add-section {
+            background-color: #2d2d2d;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .add-section h3 {
+            margin-bottom: 12px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .batch-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: start;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        
+        .status-bar {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>股票跟踪管理</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="addNewTab()">+ 新增标签页</button>
+                <a href="/follow" class="btn btn-primary">前台展示</a>
+                <a href="/" class="btn">返回首页</a>
+            </div>
+        </div>
+        
+        <div class="tabs" id="tabs"></div>
+        
+        <div id="tabContents"></div>
+        
+        <div class="status-bar" id="statusBar">加载中...</div>
+    </div>
+
+    <script>
+        // 获取API基础路径
+        const apiBaseUrl = window.location.origin;
+
+        let currentTab = null;
+        let tabs = [];
+        let editingRow = null;
+
+        async function loadTabs() {
+            console.log('开始加载标签页...');
+            console.log('API Base URL:', apiBaseUrl);
+            document.getElementById('statusBar').textContent = '正在连接服务器...';
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/tabs`);
+                console.log('API响应:', response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const result = await response.json();
+                console.log('解析结果:', result);
+
+                if (result.status === 'success') {
+                    tabs = result.data;
+                    if (tabs.length === 0) {
+                        // 如果没有标签页，创建一个默认的
+                        const response2 = await fetch(`${apiBaseUrl}/api/follow/tabs`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: '默认标签' })
+                        });
+                        const result2 = await response2.json();
+                        if (result2.status === 'success') {
+                            tabs = result2.data || [{ id: result2.data.id, name: '默认标签' }];
+                        }
+                    }
+
+                    renderTabs();
+                    if (tabs.length > 0) {
+                        selectTab(tabs[0].id);
+                    } else {
+                        document.getElementById('statusBar').textContent = '暂无数据，请添加标签页';
+                    }
+                } else {
+                    console.error('API returned error status:', result);
+                    document.getElementById('statusBar').textContent = '加载数据失败: ' + (result.message || '未知错误');
+                }
+            } catch (error) {
+                console.error('Error loading tabs:', error);
+                document.getElementById('statusBar').textContent = '加载标签页失败: ' + error.message;
+            }
+        }
+        
+        function renderTabs() {
+            const tabsContainer = document.getElementById('tabs');
+            tabsContainer.innerHTML = '';
+            
+            tabs.forEach(tab => {
+                const tabElement = document.createElement('div');
+                tabElement.className = `tab ${tab.id === currentTab ? 'active' : ''}`;
+                tabElement.innerHTML = `
+                    <span class="tab-name" contenteditable="true" onblur="updateTabName(${tab.id}, this.textContent)">${tab.name}</span>
+                    ${tabs.length > 1 ? `<span class="tab-delete" onclick="deleteTab(${tab.id}, event)">×</span>` : ''}
+                `;
+                tabElement.onclick = (e) => {
+                    if (!e.target.classList.contains('tab-name') && !e.target.classList.contains('tab-delete')) {
+                        selectTab(tab.id);
+                    }
+                };
+                tabsContainer.appendChild(tabElement);
+            });
+        }
+        
+        async function selectTab(tabId) {
+            currentTab = tabId;
+            renderTabs();
+            await loadStockFollows(tabId);
+        }
+        
+        async function updateTabName(tabId, newName) {
+            const tab = tabs.find(t => t.id === tabId);
+            if (!tab || tab.name === newName.trim()) return;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/tabs/${tabId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName.trim() })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    tab.name = newName.trim();
+                    renderTabs();
+                }
+            } catch (error) {
+                console.error('Error updating tab name:', error);
+                document.getElementById('statusBar').textContent = '更新标签页名称失败';
+            }
+        }
+        
+        async function addNewTab() {
+            const newTabName = `标签页${tabs.length + 1}`;
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/tabs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newTabName })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    const newTab = { id: result.data.id, name: newTabName };
+                    tabs.push(newTab);
+                    renderTabs();
+                    selectTab(newTab.id);
+                }
+            } catch (error) {
+                console.error('Error adding tab:', error);
+                document.getElementById('statusBar').textContent = '添加标签页失败';
+            }
+        }
+        
+        async function deleteTab(tabId, event) {
+            event.stopPropagation();
+            if (!confirm('确定要删除这个标签页吗？该标签页下的所有股票也将被删除。')) return;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/tabs/${tabId}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    tabs = tabs.filter(t => t.id !== tabId);
+                    if (currentTab === tabId && tabs.length > 0) {
+                        selectTab(tabs[0].id);
+                    } else if (tabs.length === 0) {
+                        currentTab = null;
+                        document.getElementById('tabContents').innerHTML = '';
+                        renderTabs();
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting tab:', error);
+                document.getElementById('statusBar').textContent = '删除标签页失败';
+            }
+        }
+        
+        async function loadStockFollows(tabId) {
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/stocks/${tabId}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    renderTable(result.data);
+                    document.getElementById('statusBar').textContent = '';
+                } else {
+                    console.error('API returned error status:', result);
+                    document.getElementById('statusBar').textContent = '加载数据失败: ' + (result.message || '未知错误');
+                }
+            } catch (error) {
+                console.error('Error loading stock follows:', error);
+                document.getElementById('statusBar').textContent = '加载数据失败: ' + error.message;
+            }
+        }
+        
+        function renderTable(follows) {
+            const tabContents = document.getElementById('tabContents');
+            tabContents.innerHTML = `
+                <div class="tab-content active">
+                    <div class="add-sections">
+                        <div class="add-section">
+                            <h3>添加新股票</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>题材</label>
+                                    <input type="text" class="input-field" id="newPlate" placeholder="输入题材">
+                                </div>
+                                <div class="form-group">
+                                    <label>名称</label>
+                                    <input type="text" class="input-field" id="newName" placeholder="输入股票名称" onblur="autoFillCode()">
+                                </div>
+                                <div class="form-group">
+                                    <label>代码</label>
+                                    <input type="text" class="input-field" id="newCode" placeholder="6位代码" maxlength="6">
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button class="btn" onclick="addStock()">添加</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="add-section">
+                            <h3>批量添加股票</h3>
+                            <div class="batch-row">
+                                <div class="form-group">
+                                    <label>股票名称列表（可用顿号、逗号或换行分隔）</label>
+                                    <textarea class="input-field" id="batchNames" rows="3" placeholder="例如：茂莱光学、汇成真空、波长光电"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>&nbsp;</label>
+                                    <button class="btn btn-primary" onclick="batchAddStocks()">批量添加</button>
+                                </div>
+                            </div>
+                            <div id="batchResult" style="margin-top: 8px; font-size: 12px; color: #aaa;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 30px;"></th>
+                                    <th>题材</th>
+                                    <th>名称</th>
+                                    <th>代码</th>
+                                    <th>价格</th>
+                                    <th>涨幅</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stockTableBody">
+                                ${follows.map((follow, index) => `
+                                    <tr data-id="${follow.id}" data-index="${index}" draggable="true">
+                                        <td class="drag-handle">☰</td>
+                                        <td>${follow.plate || ''}</td>
+                                        <td>${follow.name}</td>
+                                        <td>${follow.code}</td>
+                                        <td>${follow.price ? follow.price.toFixed(2) : '-'}</td>
+                                        <td>${follow.change_percent ? (follow.change_percent > 0 ? '+' : '') + follow.change_percent.toFixed(2) + '%' : '-'}</td>
+                                        <td>
+                                            <button class="action-btn action-edit" onclick="editStock(${follow.id})">编辑</button>
+                                            <button class="action-btn action-delete" onclick="deleteStock(${follow.id})">删除</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // 初始化拖拽功能
+            initDragAndDrop();
+        }
+        
+        async function autoFillCode() {
+            const name = document.getElementById('newName').value.trim();
+            if (!name) return;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/search-code?name=${encodeURIComponent(name)}`);
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.data.code) {
+                    document.getElementById('newCode').value = result.data.code;
+                }
+            } catch (error) {
+                console.error('Error getting stock code:', error);
+            }
+        }
+        
+        async function addStock() {
+            const plate = document.getElementById('newPlate').value.trim();
+            const name = document.getElementById('newName').value.trim();
+            const code = document.getElementById('newCode').value.trim();
+
+            if (!name || !code) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            if (!/^\d{6}$/.test(code)) {
+                alert('股票代码必须是6位数字');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/stocks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tab_id: currentTab, plate, name, code })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('newPlate').value = '';
+                    document.getElementById('newName').value = '';
+                    document.getElementById('newCode').value = '';
+                    await loadStockFollows(currentTab);
+                } else {
+                    alert('添加失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error adding stock:', error);
+                alert('添加股票失败');
+            }
+        }
+
+        async function batchAddStocks() {
+            const batchInput = document.getElementById('batchNames').value.trim();
+            const resultDiv = document.getElementById('batchResult');
+
+            if (!batchInput) {
+                alert('请输入股票名称');
+                return;
+            }
+
+            // 解析股票名称（支持顿号、逗号、换行分隔）
+            const names = batchInput
+                .split(/[、,，\n]+/)
+                .map(n => n.trim())
+                .filter(n => n.length > 0);
+
+            if (names.length === 0) {
+                alert('未解析到有效的股票名称');
+                return;
+            }
+
+            resultDiv.innerHTML = `正在处理 ${names.length} 个股票...`;
+            const plate = document.getElementById('newPlate').value.trim();
+            let successCount = 0;
+            let failCount = 0;
+            let failNames = [];
+
+            for (const name of names) {
+                try {
+                    // 先查询股票代码
+                    const searchResponse = await fetch(`${apiBaseUrl}/api/follow/search-code?name=${encodeURIComponent(name)}`);
+                    const searchResult = await searchResponse.json();
+
+                    if (searchResult.status === 'success' && searchResult.data.code) {
+                        const code = searchResult.data.code;
+                        // 添加股票
+                        const addResponse = await fetch(`${apiBaseUrl}/api/follow/stocks`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ tab_id: currentTab, plate, name, code })
+                        });
+                        const addResult = await addResponse.json();
+
+                        if (addResult.status === 'success') {
+                            successCount++;
+                        } else {
+                            failCount++;
+                            failNames.push(name);
+                        }
+                    } else {
+                        failCount++;
+                        failNames.push(name + '(未找到代码)');
+                    }
+                } catch (error) {
+                    console.error('Error adding stock:', name, error);
+                    failCount++;
+                    failNames.push(name);
+                }
+            }
+
+            // 清空输入框并刷新列表
+            document.getElementById('batchNames').value = '';
+            await loadStockFollows(currentTab);
+
+            // 显示结果
+            let resultHtml = `添加完成：成功 ${successCount} 个，失败 ${failCount} 个`;
+            if (failNames.length > 0) {
+                resultHtml += `<br>失败：${failNames.join('、')}`;
+            }
+            resultDiv.innerHTML = resultHtml;
+        }
+        
+        function editStock(id) {
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            if (!row) return;
+
+            editingRow = id;
+            const cells = row.querySelectorAll('td');
+
+            // 表格列结构：0=拖拽手柄, 1=题材, 2=名称, 3=代码, 4=价格, 5=涨幅, 6=操作
+            // 获取题材值
+            let plateValue = cells[1].textContent;
+            if (plateValue === '-') {
+                plateValue = '';
+            }
+
+            cells[1].innerHTML = `<input type="text" class="input-field" value="${plateValue}" id="edit-plate-${id}">`;
+            cells[2].innerHTML = `<input type="text" class="input-field" value="${cells[2].textContent}" id="edit-name-${id}" onblur="autoFillEditCode(${id})">`;
+            cells[3].innerHTML = `<input type="text" class="input-field" value="${cells[3].textContent}" id="edit-code-${id}" maxlength="6">`;
+            cells[6].innerHTML = `
+                <button class="action-btn action-save" onclick="saveStock(${id})">保存</button>
+                <button class="action-btn action-cancel" onclick="cancelEdit(${id})">取消</button>
+            `;
+        }
+        
+        async function autoFillEditCode(id) {
+            const name = document.getElementById(`edit-name-${id}`).value.trim();
+            if (!name) return;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/search-code?name=${encodeURIComponent(name)}`);
+                const result = await response.json();
+                
+                if (result.status === 'success' && result.data.code) {
+                    document.getElementById(`edit-code-${id}`).value = result.data.code;
+                }
+            } catch (error) {
+                console.error('Error getting stock code:', error);
+            }
+        }
+        
+        async function saveStock(id) {
+            const plate = document.getElementById(`edit-plate-${id}`).value.trim();
+            const name = document.getElementById(`edit-name-${id}`).value.trim();
+            const code = document.getElementById(`edit-code-${id}`).value.trim();
+
+            if (!name || !code) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            if (!/^\d{6}$/.test(code)) {
+                alert('股票代码必须是6位数字');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/stocks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ plate, name, code })
+                });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    editingRow = null;
+                    await loadStockFollows(currentTab);
+                } else {
+                    alert('保存失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error saving stock:', error);
+                alert('保存股票失败');
+            }
+        }
+        
+        async function cancelEdit(id) {
+            editingRow = null;
+            await loadStockFollows(currentTab);
+        }
+        
+        async function deleteStock(id) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/stocks/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    await loadStockFollows(currentTab);
+                } else {
+                    alert('删除失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting stock:', error);
+                alert('删除股票失败');
+            }
+        }
+        
+        // 初始化拖拽功能
+        function initDragAndDrop() {
+            const tbody = document.getElementById('stockTableBody');
+            if (!tbody) return;
+
+            const rows = tbody.querySelectorAll('tr');
+            let draggedRow = null;
+
+            rows.forEach(row => {
+                const dragHandle = row.querySelector('.drag-handle');
+
+                row.addEventListener('dragstart', function(e) {
+                    draggedRow = this;
+                    this.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', this.innerHTML);
+                });
+
+                row.addEventListener('dragend', function() {
+                    this.classList.remove('dragging');
+                    rows.forEach(r => r.classList.remove('drag-over'));
+                    draggedRow = null;
+                });
+
+                row.addEventListener('dragover', function(e) {
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                    }
+                    e.dataTransfer.dropEffect = 'move';
+
+                    if (this !== draggedRow) {
+                        this.classList.add('drag-over');
+                    }
+                    return false;
+                });
+
+                row.addEventListener('dragleave', function() {
+                    this.classList.remove('drag-over');
+                });
+
+                row.addEventListener('drop', async function(e) {
+                    if (e.stopPropagation) {
+                        e.stopPropagation();
+                    }
+
+                    if (draggedRow !== this) {
+                        const draggedId = parseInt(draggedRow.getAttribute('data-id'));
+                        const targetId = parseInt(this.getAttribute('data-id'));
+
+                        // 获取所有行的ID顺序
+                        const allRows = Array.from(tbody.querySelectorAll('tr'));
+                        const draggedIndex = allRows.indexOf(draggedRow);
+                        const targetIndex = allRows.indexOf(this);
+
+                        // 在DOM中移动行
+                        if (draggedIndex < targetIndex) {
+                            this.parentNode.insertBefore(draggedRow, this.nextSibling);
+                        } else {
+                            this.parentNode.insertBefore(draggedRow, this);
+                        }
+
+                        // 保存新的顺序到服务器
+                        await saveRowOrder();
+                    }
+
+                    return false;
+                });
+            });
+        }
+
+        // 保存行顺序到服务器
+        async function saveRowOrder() {
+            const tbody = document.getElementById('stockTableBody');
+            if (!tbody) return;
+
+            const rows = tbody.querySelectorAll('tr');
+            const orderData = [];
+
+            rows.forEach((row, index) => {
+                const id = parseInt(row.getAttribute('data-id'));
+                orderData.push({ id: id, sort_order: index });
+            });
+
+            try {
+                const response = await fetch(`${apiBaseUrl}/api/follow/stocks/reorder`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tab_id: currentTab, orders: orderData })
+                });
+                const result = await response.json();
+
+                if (result.status !== 'success') {
+                    console.error('保存顺序失败:', result.message);
+                }
+            } catch (error) {
+                console.error('保存行顺序失败:', error);
+            }
+        }
+
+        loadTabs();
+    </script>
+</body>
+</html>
