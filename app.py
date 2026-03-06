@@ -271,244 +271,52 @@ def get_time_sharing_data():
     # 生成缓存键
     cache_key = f'time_sharing:{code}'
     
-    # 禁用缓存，每次都获取新数据
-    # cached_data = get_cache(cache_key)
-    # if cached_data:
-    #     # 创建响应并设置缓存头
-    #     response = make_response(jsonify(cached_data))
-    #     response.headers['Cache-Control'] = 'public, max-age=60'  # 缓存1分钟
-    #     return response
+    # 尝试从缓存获取数据
+    cached_data = get_cache(cache_key)
+    if cached_data:
+        # 创建响应并设置缓存头
+        response = make_response(jsonify(cached_data))
+        response.headers['Cache-Control'] = 'public, max-age=60'  # 缓存1分钟
+        return response
     
     try:
-        # 验证股票代码格式
-        if not code.isdigit() or len(code) < 5 or len(code) > 6:
-            return jsonify({'error': f'无效的股票代码: {code}'}), 400
+        # 根据股票代码生成secid参数
+        if code[0] == '6':
+            market = '1'  # 沪市
+        elif code[0] == '0' or code[0] == '3':
+            market = '0'  # 深市
+        else:
+            return jsonify({'error': f'不支持的股票代码前缀: {code[0]}'}), 400
         
-        # 尝试使用东方财富API
-        try:
-            data = fetch_eastmoney_data(code)
-            if data:
-                # 缓存数据
-                set_cache(cache_key, data, 5)  # 缓存5秒
-                # 创建响应并设置缓存头
-                api_response = make_response(jsonify(data))
-                api_response.headers['Cache-Control'] = 'public, max-age=5'  # 缓存5秒
-                api_response.headers['Access-Control-Allow-Origin'] = '*'  # 允许跨域
-                return api_response
-        except Exception as e:
-            print(f"东方财富API请求失败: {str(e)}")
-            return jsonify({'error': f'东方财富API请求失败: {str(e)}'}), 500
+        secid = f"{market}.{code}"
         
-        # 如果东方财富API失败，返回错误信息
-        return jsonify({'error': '无法获取东方财富数据'}), 500
-    except Exception as e:
-        # 记录详细错误信息
-        print(f"处理分时数据失败: {code}, 错误: {str(e)}")
-        # 返回错误信息，而不是空数据
-        return jsonify({'error': f'处理失败: {str(e)}'}), 500
-
-@app.route('/api/proxy-eastmoney')
-def proxy_eastmoney():
-    """东方财富API代理，直接返回原始数据"""
-    code = request.args.get('code', '').strip()
-    if not code:
-        return jsonify({'error': '缺少股票代码参数'}), 400
-    
-    # 生成secid
-    if code[0] == '6':
-        market = '1'
-    elif code[0] == '0' or code[0] == '3':
-        market = '0'
-    else:
-        return jsonify({'error': '不支持的股票代码'}), 400
-    
-    secid = f"{market}.{code}"
-    api_url = f'https://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f8,f10&fields2=f51,f53,f56,f58&secid={secid}&ndays=1&iscr=0&iscca=0'
-    
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br, zstd',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
-        'Cache-Control': 'max-age=0',
-        'Connection': 'keep-alive',
-        'Host': 'push2.eastmoney.com',
-        'Sec-Ch-Ua': '"Not:A-Brand";v="99", "Microsoft Edge";v="145", "Chromium";v="145"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1',
-        'Referer': 'https://quote.eastmoney.com/'
-    }
-    
-    try:
-        session = requests.Session()
-        session.headers.update(headers)
+        # 构建API请求URL
+        api_url = f'https://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f8,f10&fields2=f51,f53,f56,f58&secid={secid}&ndays=1&iscr=0&iscca=0'
         
-        # 先访问首页获取cookie
-        session.get('https://quote.eastmoney.com/', timeout=10, verify=False)
-        
-        # 再请求分时数据
-        response = session.get(api_url, timeout=10, verify=False)
-        response.raise_for_status()
-        data = response.json()
-        
-        # 直接返回东方财富的响应，添加CORS头
-        resp = make_response(data)
-        resp.headers['Access-Control-Allow-Origin'] = '*'
-        resp.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-        resp.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        return resp
-    except Exception as e:
-        print(f"东方财富API代理请求失败: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
-
-def fetch_eastmoney_data(code):
-    """从东方财富API获取分时数据"""
-    # 根据股票代码生成secid参数
-    if code[0] == '6':
-        market = '1'  # 沪市
-    elif code[0] == '0' or code[0] == '3':
-        market = '0'  # 深市
-    else:
-        return None
-    
-    secid = f"{market}.{code}"
-    
-    # 构建API请求URL
-    api_url = f'https://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f8,f10&fields2=f51,f53,f56,f58&secid={secid}&ndays=1&iscr=0&iscca=0'
-    
-    # 设置请求头，完整模拟浏览器请求
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Accept-Encoding': 'gzip, deflate, br, zstd',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
-        'Cache-Control': 'max-age=0',
-        'Connection': 'keep-alive',
-        'Host': 'push2.eastmoney.com',
-        'Sec-Ch-Ua': '"Not:A-Brand";v="99", "Microsoft Edge";v="145", "Chromium";v="145"',
-        'Sec-Ch-Ua-Mobile': '?0',
-        'Sec-Ch-Ua-Platform': '"Windows"',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Upgrade-Insecure-Requests': '1'
-    }
-    
-    # 创建会话
-    session = requests.Session()
-    session.headers.update(headers)
-    
-    # 发送请求获取数据（不需要先访问首页）
-    response = session.get(api_url, timeout=10, verify=False)
-    response.raise_for_status()  # 抛出HTTP错误
-    
-    # 解析响应数据
-    result = response.json()
-    
-    return result
-
-def fetch_sina_data(code):
-    """从新浪财经API获取股票数据"""
-    # 根据股票代码生成新浪财经的市场代码
-    if code[0] == '6':
-        market = 'sh'  # 沪市
-    elif code[0] == '0' or code[0] == '3':
-        market = 'sz'  # 深市
-    else:
-        return None
-    
-    # 构建新浪财经API请求URL
-    api_url = f'http://hq.sinajs.cn/list={market}{code}'
-    
-    # 设置请求头，模拟浏览器请求
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Referer': 'https://finance.sina.com.cn/',
-        'Accept': '*/*',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.9',
-        'Connection': 'keep-alive'
-    }
-    
-    # 发送请求获取数据
-    response = requests.get(api_url, headers=headers, timeout=10, verify=False)
-    response.raise_for_status()  # 抛出HTTP错误
-    
-    # 解析新浪财经的响应数据
-    content = response.text
-    
-    # 提取数据
-    import re
-    match = re.search(r'="(.*?)"', content)
-    if not match:
-        return {'rc': 0, 'data': {'preClose': 0, 'trends': []}}
-    
-    data_str = match.group(1)
-    data_list = data_str.split(',')
-    
-    if len(data_list) < 3:
-        return {'rc': 0, 'data': {'preClose': 0, 'trends': []}}
-    
-    # 提取昨收价
-    preClose = data_list[2]
-    
-    # 生成模拟的分时数据
-    # 注意：新浪财经API不提供完整的分时数据，这里使用模拟数据
-    # 实际应用中，可能需要使用其他数据源或API
-    trends = []
-    currentPrice = float(data_list[3])  # 当前价
-    now = datetime.now()
-    year = now.year
-    month = str(now.month).zfill(2)
-    day = str(now.day).zfill(2)
-    
-    # 生成9:30-11:30的数据
-    for hour in range(9, 11):
-        for minute in range(0, 60):
-            if hour == 9 and minute < 30:
-                continue
-            if hour == 11 and minute >= 30:
-                break
-            
-            # 随机价格波动
-            currentPrice += (random.random() - 0.5) * 0.5
-            currentPrice = max(0, currentPrice)
-            
-            time_str = f"{year}-{month}-{day} {str(hour).zfill(2)}:{str(minute).zfill(2)}"
-            volume = int(random.random() * 10000)
-            amount = round(currentPrice * volume, 3)
-            
-            trends.append(f"{time_str},{round(currentPrice, 3)},{volume},{amount}")
-    
-    # 生成13:00-15:00的数据
-    for hour in range(13, 15):
-        for minute in range(0, 60):
-            # 随机价格波动
-            currentPrice += (random.random() - 0.5) * 0.5
-            currentPrice = max(0, currentPrice)
-            
-            time_str = f"{year}-{month}-{day} {str(hour).zfill(2)}:{str(minute).zfill(2)}"
-            volume = int(random.random() * 10000)
-            amount = round(currentPrice * volume, 3)
-            
-            trends.append(f"{time_str},{round(currentPrice, 3)},{volume},{amount}")
-    
-    return {
-        'rc': 0,
-        'data': {
-            'code': code,
-            'preClose': preClose,
-            'trends': trends
+        # 设置请求头，模拟浏览器请求
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Referer': 'https://quote.eastmoney.com/'
         }
-    }
+        
+        # 发送请求获取数据
+        response = requests.get(api_url, headers=headers)
+        response.raise_for_status()  # 抛出HTTP错误
+        
+        # 解析响应数据
+        result = response.json()
+        
+        # 缓存数据
+        set_cache(cache_key, result, 60)  # 缓存1分钟
+        
+        # 创建响应并设置缓存头
+        api_response = make_response(jsonify(result))
+        api_response.headers['Cache-Control'] = 'public, max-age=60'  # 缓存1分钟
+        return api_response
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'请求失败: {str(e)}'}), 500
+    except Exception as e:
+        return jsonify({'error': f'处理失败: {str(e)}'}), 500
 
 @app.route('/api/profit-ratio-data')
 def get_profit_ratio_data_api():

@@ -95,7 +95,7 @@ function filterByDate(dateValue) {
                     var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
                 row.innerHTML = 
                     '<td><a href="' + link + '" target="_blank" class="' + nameClass + '">' + stock.name + '</a></td>' +
-                    '<td><div class="time-chart" data-code="' + stock.code_part + '" style="width: 140px; height: 50px;"></div></td>' +
+                    '<td style="display: none;"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
                     '<td class="price"></td>' +
                     '<td class="change-percentage"></td>' +
                     '<td class="amount"></td>' +
@@ -399,7 +399,7 @@ var visibleStockCodes = {}; // 存储可见的股票代码，使用对象替代S
 var dataCache = {
     timeSharingData: {},
     realTimeData: {},
-    cacheDuration: 5000 // 缓存5秒
+    cacheDuration: 30000 // 缓存30秒
 };
 
 // 并发请求控制
@@ -417,54 +417,30 @@ function fetchTimeSharingData(stockCode) {
         return Promise.resolve(cachedData.data);
     }
     
-    console.log('fetchTimeSharingData: 开始获取数据 =', stockCode);
+    // 使用后端代理API避免CORS问题
+    var proxyUrl = '/api/time-sharing-data?code=' + encodeURIComponent(stockCode);
     
-    // 使用后端代理API
-    return new Promise(function(resolve) {
-        var apiUrl = '/api/proxy-eastmoney?code=' + stockCode;
-        
-        console.log('fetchTimeSharingData: 代理请求URL =', apiUrl);
-        
-        // 设置超时
-        var timeout = setTimeout(function() {
-            console.log('fetchTimeSharingData: 代理请求超时');
-            resolve(null);
-        }, 10000);
-        
-        fetch(apiUrl)
-            .then(response => {
-                clearTimeout(timeout);
-                if (!response.ok) {
-                    console.error('fetchTimeSharingData: 代理请求失败，状态码 =', response.status);
-                    resolve(null);
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('fetchTimeSharingData: 收到代理数据 =', stockCode, data);
-                
-                // 检查是否有错误
-                if (!data || data.error) {
-                    console.error('fetchTimeSharingData: 代理返回错误 =', stockCode, data ? data.error : '无数据');
-                    resolve(null);
-                    return;
-                }
-                
-                // 更新缓存
-                dataCache.timeSharingData[stockCode] = {
-                    data: data,
-                    timestamp: now
-                };
-                
-                resolve(data);
-            })
-            .catch(error => {
-                clearTimeout(timeout);
-                console.error('fetchTimeSharingData: 代理请求异常 =', stockCode, error);
-                resolve(null);
-            });
-    });
+    // 返回Promise对象
+    return fetch(proxyUrl)
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('HTTP error! status: ' + response.status);
+            }
+            // 解析JSON响应
+            return response.json();
+        })
+        .then(function(data) {
+            // 更新缓存
+            dataCache.timeSharingData[stockCode] = {
+                data: data,
+                timestamp: now
+            };
+            return data;
+        })
+        .catch(function(error) {
+            console.error(`获取股票 ${stockCode} 的分时数据失败:`, error);
+            return null;
+        });
 }
 
 // 根据股票代码生成secid参数
@@ -492,20 +468,14 @@ function generateSecid(stockCode) {
 
 // 解析分时数据的函数
 function parseTimeSharingData(data) {
-    console.log('parseTimeSharingData 收到的原始数据:', data);
-    
     if (!data || data.rc !== 0 || !data.data) {
-        console.log('parseTimeSharingData: 数据格式不正确');
         return null;
     }
     
     var preClose = data.data.preClose;
     var trends = data.data.trends;
     
-    console.log('preClose:', preClose, 'trends长度:', trends ? trends.length : 0);
-    
     if (!preClose || !Array.isArray(trends)) {
-        console.log('parseTimeSharingData: preClose或trends无效');
         return null;
     }
     
@@ -706,18 +676,13 @@ function updateTimeChart(chart, parsedData) {
     var dataPoints = parsedData.dataPoints;
     
     // 准备图表数据，将时间转换为字符串格式以适应category类型X轴
-    var xAxisData = dataPoints.map(function(point) {
+    var chartData = dataPoints.map(function(point) {
         // 将时间对象转换为HH:MM格式的字符串
         var date = new Date(point.time);
         var hours = date.getHours().toString().padStart(2, '0');
         var minutes = date.getMinutes().toString().padStart(2, '0');
         var timeStr = hours + ':' + minutes;
-        return timeStr;
-    });
-    
-    // 准备价格数据
-    var seriesData = dataPoints.map(function(point) {
-        return point.price;
+        return [timeStr, point.price];
     });
     
     // 设置线条颜色
@@ -753,43 +718,19 @@ function updateTimeChart(chart, parsedData) {
     
     // 更新图表配置
     chart.setOption({
-        xAxis: {
-            type: 'category',
-            data: xAxisData
-        },
         yAxis: {
             min: function(value) {
-                // 计算价格范围
-                var prices = seriesData.concat([preClose]);
-                var validPrices = prices.filter(function(p) { return !isNaN(p); });
-                if (validPrices.length === 0) {
-                    return preClose - 0.1;
-                }
-                var minPrice = Math.min(...validPrices);
-                var maxPrice = Math.max(...validPrices);
-                var priceRange = maxPrice - minPrice || 0.1;
-                
                 // 设置Y轴最小值为略低于最低价格
-                return minPrice - (priceRange * 0.1);
+                return Math.min(value.min, preClose) - (Math.abs(value.max - value.min) * 0.1);
             },
             max: function(value) {
-                // 计算价格范围
-                var prices = seriesData.concat([preClose]);
-                var validPrices = prices.filter(function(p) { return !isNaN(p); });
-                if (validPrices.length === 0) {
-                    return preClose + 0.1;
-                }
-                var minPrice = Math.min(...validPrices);
-                var maxPrice = Math.max(...validPrices);
-                var priceRange = maxPrice - minPrice || 0.1;
-                
                 // 设置Y轴最大值为略高于最高价格
-                return maxPrice + (priceRange * 0.1);
+                return Math.max(value.max, preClose) + (Math.abs(value.max - value.min) * 0.1);
             }
         },
         series: [
             {
-                data: seriesData,
+                data: chartData,
                 lineStyle: {
                     color: lineColor
                 },
@@ -921,10 +862,7 @@ function isElementInViewport(el) {
 
 // 渲染可视区域内的分时图
 function renderVisibleCharts() {
-    console.log('renderVisibleCharts 被调用');
-    
     var chartContainers = document.querySelectorAll('.time-chart');
-    console.log('找到的分时图容器数量:', chartContainers.length);
     
     // 检查是否有任何容器在视口中
     var anyVisible = false;
