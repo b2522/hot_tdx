@@ -93,9 +93,9 @@ function filterByDate(dateValue) {
                     var link = 'https://xuangutong.com.cn/stock/' + stock.code_part + '.' + stock.market.toUpperCase();
                     var codeClass = stock.code_part.startsWith('3') ? 'orange-code' : '';
                     var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
-                row.innerHTML = 
+                row.innerHTML =
                     '<td><a href="' + link + '" target="_blank" class="' + nameClass + '">' + stock.name + '</a></td>' +
-                    '<td style="display: none;"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
+                    '<td><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
                     '<td class="price"></td>' +
                     '<td class="change-percentage"></td>' +
                     '<td class="amount"></td>' +
@@ -408,18 +408,12 @@ var activeRequests = 0;
 var requestQueue = [];
 
 // 根据股票代码获取分时数据的API调用函数，使用缓存
+// 根据股票代码获取分时数据的API调用函数，暂时禁用缓存以解决数据显示问题
 function fetchTimeSharingData(stockCode) {
-    // 检查缓存
-    var cachedData = dataCache.timeSharingData[stockCode];
-    var now = Date.now();
-    
-    if (cachedData && (now - cachedData.timestamp < dataCache.cacheDuration)) {
-        return Promise.resolve(cachedData.data);
-    }
-    
+    // 直接获取最新数据，不使用缓存
     // 使用后端代理API避免CORS问题
     var proxyUrl = '/api/time-sharing-data?code=' + encodeURIComponent(stockCode);
-    
+
     // 返回Promise对象
     return fetch(proxyUrl)
         .then(function(response) {
@@ -430,11 +424,6 @@ function fetchTimeSharingData(stockCode) {
             return response.json();
         })
         .then(function(data) {
-            // 更新缓存
-            dataCache.timeSharingData[stockCode] = {
-                data: data,
-                timestamp: now
-            };
             return data;
         })
         .catch(function(error) {
@@ -1657,7 +1646,7 @@ function searchPlate() {
             tbody.innerHTML = '';
             
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="no-data">没有找到匹配的题材数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" class="no-data">没有找到匹配的题材数据</td></tr>';
                 return;
             }
             
@@ -1670,9 +1659,9 @@ function searchPlate() {
                 row.style.cursor = 'pointer';
                 var codeClass = stock.code_part.startsWith('3') ? 'orange-code' : '';
                 var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
-                row.innerHTML = 
+                row.innerHTML =
                     '<td class="' + nameClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.name + '</td>' +
-                    '<td style="display: none;" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
+                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
                     '<td class="price" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
                     '<td class="change-percentage" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00%</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
@@ -1713,7 +1702,7 @@ function searchPlate() {
         .catch(function(error) {
             console.error('搜索题材数据失败:', error);
             const tbody = document.getElementById('stockTableBody');
-            tbody.innerHTML = '<tr><td colspan="10" class="no-data">搜索题材数据时发生错误</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="no-data">搜索题材数据时发生错误</td></tr>';
         });
 }
 

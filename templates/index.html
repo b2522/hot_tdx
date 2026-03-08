@@ -6,10 +6,11 @@
 
     <!-- 引入外部CSS文件 -->
     <link rel="stylesheet" href="/static/css/styles.css">
+    <!-- 引入 ECharts 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <!-- 引入JavaScript文件 -->
-
     <script src="/static/js/main.js"></script>
-    </head>
+</head>
     <title>热门个股解读</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <!-- Google tag (gtag.js) -->
@@ -69,7 +70,7 @@
                                 >
                             </div>
                         </th>
-                        <th style="display: none;">分时图</th>
+                        <th>分时图</th>
                         <th>价格</th>
                         <th class="sortable" onclick="sortByChangePercentage()">涨幅</th>
                         <th class="sortable" onclick="sortByAmount()">成交额</th>
@@ -88,7 +89,7 @@
                         {% for stock in stocks %}
                             <tr onclick="linkToTongDaXin('{{ stock.code_part }}')" style="cursor: pointer;">
                                 <td class="stock-name-link{% if stock.code_part.startswith('688') %} blue-text{% elif stock.code_part.startswith('3') or stock.code_part.startswith('68') %} orange-text{% endif %}">{{ stock.name }}</td>
-                                <td style="display: none;"><div class="time-chart" data-code="{{ stock.code_part }}"></div></td>
+                                <td><div class="time-chart" data-code="{{ stock.code_part }}"></div></td>
                                 <td class="price"></td>
                                 <td class="change-percentage"></td>
                                 <td class="amount"></td>

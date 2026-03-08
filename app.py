@@ -267,18 +267,7 @@ def get_time_sharing_data():
     code = request.args.get('code', '').strip()
     if not code:
         return jsonify({'error': '缺少股票代码参数'}), 400
-    
-    # 生成缓存键
-    cache_key = f'time_sharing:{code}'
-    
-    # 尝试从缓存获取数据
-    cached_data = get_cache(cache_key)
-    if cached_data:
-        # 创建响应并设置缓存头
-        response = make_response(jsonify(cached_data))
-        response.headers['Cache-Control'] = 'public, max-age=60'  # 缓存1分钟
-        return response
-    
+
     try:
         # 根据股票代码生成secid参数
         if code[0] == '6':
@@ -287,35 +276,34 @@ def get_time_sharing_data():
             market = '0'  # 深市
         else:
             return jsonify({'error': f'不支持的股票代码前缀: {code[0]}'}), 400
-        
+
         secid = f"{market}.{code}"
-        
+
         # 构建API请求URL
         api_url = f'https://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f8,f10&fields2=f51,f53,f56,f58&secid={secid}&ndays=1&iscr=0&iscca=0'
-        
+
+        logging.info(f"请求分时数据API: code={code}, secid={secid}, url={api_url}")
+
         # 设置请求头，模拟浏览器请求
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Referer': 'https://quote.eastmoney.com/'
         }
-        
+
         # 发送请求获取数据
         response = requests.get(api_url, headers=headers)
         response.raise_for_status()  # 抛出HTTP错误
-        
-        # 解析响应数据
+
+        # 返回获取到的数据并设置缓存头
         result = response.json()
-        
-        # 缓存数据
-        set_cache(cache_key, result, 60)  # 缓存1分钟
-        
-        # 创建响应并设置缓存头
         api_response = make_response(jsonify(result))
         api_response.headers['Cache-Control'] = 'public, max-age=60'  # 缓存1分钟
         return api_response
     except requests.exceptions.RequestException as e:
+        logging.error(f"请求分时数据失败: code={code}, error={str(e)}", exc_info=True)
         return jsonify({'error': f'请求失败: {str(e)}'}), 500
     except Exception as e:
+        logging.error(f"处理分时数据失败: code={code}, error={str(e)}", exc_info=True)
         return jsonify({'error': f'处理失败: {str(e)}'}), 500
 
 @app.route('/api/profit-ratio-data')
@@ -869,7 +857,7 @@ if __name__ == '__main__':
         os.makedirs('templates')
     # 启动Flask应用
     print("Starting Flask app...")
-    print("App will be available at http://127.0.0.1:5000/")
+    print("App will be available at http://127.0.0.1:15000/")
     try:
         # 本地开发时使用debug模式
         app.run(debug=True, host='0.0.0.0', port=15000)
