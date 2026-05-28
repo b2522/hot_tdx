@@ -33,14 +33,13 @@
             <div class="header-container">
                 <div class="date-selector">
                     <span class="market-label">
-                        <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
+                        <span style="color: orange;">【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">【科创板】</span>
                     </span>
                     <span style="color: var(--text-color);"> | </span>
                     <button onclick="location.reload()" class="refresh-button" title="刷新页面">
                     刷新
                 </button>
                     <span style="color: var(--text-color);"> | </span>
-                    <a href="/zqtc_tdx" style="color: var(--text-color); text-decoration: none; font-size: 14px;">按题材同列</a>
                     <a href="javascript:void(0)" onclick="changeDate(-1)" style="color: var(--text-color); text-decoration: underline; font-size: 14px; margin-right: 5px; display: inline-block; line-height: 24px;">前一天</a>
                     <input type="date" id="dateFilter" placeholder="选择日期" onchange="filterByDate(this.value)" class="filter-input" style="margin: 0; padding: 2px 5px; display: inline-block; width: auto; max-width: 130px; vertical-align: middle;">
                     <a href="javascript:void(0)" onclick="changeDate(1)" style="color: var(--text-color); text-decoration: underline; font-size: 14px; margin-left: 5px; display: inline-block; line-height: 24px;">后一天</a>
