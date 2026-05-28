@@ -1,3 +1,32 @@
+var isNoStFilterActive = false;
+
+function shouldShowStockByNoSt(stockName) {
+    if (!isNoStFilterActive) {
+        return true;
+    }
+    return !stockName.toLowerCase().includes('st');
+}
+
+function toggleNoStFilter() {
+    isNoStFilterActive = !isNoStFilterActive;
+
+    var button = document.getElementById('noStButton');
+    if (button) {
+        button.classList.toggle('active', isNoStFilterActive);
+    }
+
+    var rows = document.querySelectorAll('#stockTableBody tr');
+    rows.forEach(function(row) {
+        var cells = row.querySelectorAll('td');
+        if (cells.length === 0 || cells[0].getAttribute('colspan')) {
+            return;
+        }
+        var nameCell = cells[0];
+        var stockName = nameCell.textContent.trim();
+        row.style.display = shouldShowStockByNoSt(stockName) ? '' : 'none';
+    });
+}
+
 // 搜索建议功能，从后端API获取数据
 function showSuggestions(inputValue) {
     var suggestionsContainer = document.getElementById('searchSuggestions');
