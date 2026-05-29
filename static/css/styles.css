@@ -700,7 +700,9 @@ th:nth-child(10) .filter-input {
 
 /* 内联搜索按钮样式 */
 .plate-search-button-inline {
-    padding: 5px 12px;
+    padding: 0 12px;
+    height: 32px;
+    line-height: 32px;
     background-color: #4CAF50;
     color: white;
     border: none;
@@ -709,6 +711,7 @@ th:nth-child(10) .filter-input {
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-weight: 500;
+    box-sizing: border-box;
 }
 
 .plate-search-button-inline:hover {
@@ -720,7 +723,9 @@ th:nth-child(10) .filter-input {
 }
 
 .no-st-button {
-    padding: 5px 12px;
+    padding: 0 12px;
+    height: 32px;
+    line-height: 32px;
     margin-left: 8px;
     background-color: #666;
     color: white;
@@ -730,6 +735,7 @@ th:nth-child(10) .filter-input {
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-weight: 500;
+    box-sizing: border-box;
 }
 
 .no-st-button:hover {
@@ -749,7 +755,9 @@ th:nth-child(10) .filter-input {
 }
 
 .export-button {
-    padding: 5px 12px;
+    padding: 0 12px;
+    height: 32px;
+    line-height: 32px;
     margin-left: 8px;
     background-color: #2196F3;
     color: white;
@@ -759,6 +767,7 @@ th:nth-child(10) .filter-input {
     cursor: pointer;
     transition: background-color 0.3s ease;
     font-weight: 500;
+    box-sizing: border-box;
 }
 
 .export-button:hover {
