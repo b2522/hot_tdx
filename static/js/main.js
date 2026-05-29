@@ -27,6 +27,49 @@ function toggleNoStFilter() {
     });
 }
 
+function exportStockCodes() {
+    var rows = document.querySelectorAll('#stockTableBody tr');
+    var codes = [];
+
+    rows.forEach(function(row) {
+        if (row.style.display === 'none') {
+            return;
+        }
+        var codeCell = row.querySelector('td:nth-child(7)');
+        if (!codeCell) {
+            return;
+        }
+        var code = codeCell.textContent.trim();
+        if (!code) {
+            return;
+        }
+        var firstChar = code.charAt(0);
+        if (firstChar === '0' || firstChar === '3') {
+            codes.push('0' + code);
+        } else if (firstChar === '6') {
+            codes.push('1' + code);
+        } else {
+            codes.push(code);
+        }
+    });
+
+    if (codes.length === 0) {
+        alert('没有可导出的股票代码');
+        return;
+    }
+
+    var content = codes.join('\n');
+    var blob = new Blob([content], { type: 'text/plain' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '最强题材.EBK';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 // 搜索建议功能，从后端API获取数据
 function showSuggestions(inputValue) {
     var suggestionsContainer = document.getElementById('searchSuggestions');
