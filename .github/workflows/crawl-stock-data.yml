@@ -5,7 +5,7 @@ on:
     # 北京时间15:05 = UTC时间7:05
     - cron: '5 4 * * 1-5'
     # 北京时间18:00 = UTC时间10:00
-    - cron: '0 6 * * 1-5'
+    - cron: '5 5 * * 1-5'
   workflow_dispatch:
     # 允许手动触发
     inputs:
