@@ -398,7 +398,7 @@ except Exception as e:
 def _fetch_quote_from_tencent(secids):
     """行情数据源：腾讯 qt.gtimg.cn（免鉴权、稳定，已替代东财）。
     转换为与东财 ulist 相同的响应结构，前端无需改动。
-    字段映射（~分隔，0起始）：[1]=名称 [2]=代码 [3]=最新价 [32]=涨跌幅% [37]=成交额(万元)"""
+    字段映射（~分隔，0起始）：[1]=名称 [2]=代码 [3]=最新价 [32]=涨跌幅% [37]=成交额(万元) [44]=流通市值(亿元)"""
     codes = []
     for sid in secids.split(','):
         try:
@@ -426,12 +426,19 @@ def _fetch_quote_from_tencent(secids):
             if len(fields) < 45:
                 continue
             try:
+                def _to_f(v, default=0.0):
+                    try:
+                        return float(v)
+                    except (TypeError, ValueError):
+                        return default
                 diff.append({
-                    'f2': float(fields[3]),
-                    'f3': float(fields[32]),
-                    'f6': float(fields[37]) * 10000,
+                    'f2': _to_f(fields[3]),
+                    'f3': _to_f(fields[32]),
+                    'f6': _to_f(fields[37]) * 10000,
                     'f12': fields[2],
                     'f14': fields[1],
+                    # 流通市值：腾讯单位为亿元，东财 f21 单位为元
+                    'f21': _to_f(fields[44]) * 100000000,
                 })
             except (ValueError, IndexError):
                 continue
