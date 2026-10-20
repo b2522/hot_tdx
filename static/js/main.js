@@ -1174,7 +1174,7 @@ function updateStockTable(data, rows, codeMap) {
         var price = stock.f2 !== undefined && stock.f2 !== null ? stock.f2 : 0;
         var changePercent = stock.f3 !== undefined && stock.f3 !== null ? stock.f3 : 0;
         var amount = stock.f6 !== undefined && stock.f6 !== null ? stock.f6 : 0;
-        var value = stock.f10 !== undefined && stock.f10 !== null ? stock.f10 : 0;
+        var value = stock.f21 !== undefined && stock.f21 !== null ? stock.f21 : 0;
         
         // 查找所有包含该股票代码的行
         Array.prototype.forEach.call(rows, function(row) {

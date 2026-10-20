@@ -616,63 +616,22 @@
                 return realTimeDataCache.data[cacheKey];
             }
             
-            const originalUrl = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
-            console.log('Fetching real-time data from:', originalUrl);
-            
-            const corsProxies = [
-                'https://api.allorigins.win/raw?url=',
-                'https://corsproxy.io/?',
-                'https://cors-anywhere.herokuapp.com/',
-                'https://thingproxy.freeboard.io/fetch/'
-            ];
-            
-            // 构建所有请求
-            const requests = [];
-            
-            // 直接请求
-            requests.push(
-                fetchWithTimeout(originalUrl, {
+            // 走本地后端代理（数据源已切换为腾讯行情，服务端返回结构与东财 ulist 一致）
+            const apiUrl = `/api/proxy-eastmoney-stock-data?secids=${secIds}`;
+            console.log('Fetching real-time data from:', apiUrl);
+
+            try {
+                const response = await fetchWithTimeout(apiUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json, text/plain, */*',
                     }
-                }).then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error('Direct fetch failed');
-                }).catch(error => {
-                    console.log('Direct fetch failed:', error.message);
-                    return null;
-                })
-            );
-            
-            // 并行请求所有代理
-            for (const proxyUrl of corsProxies) {
-                const proxiedUrl = proxyUrl + encodeURIComponent(originalUrl);
-                requests.push(
-                    fetchWithTimeout(proxiedUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json, text/plain, */*',
-                        }
-                    }).then(response => {
-                        if (response.ok) {
-                            return response.json();
-                        }
-                        throw new Error(`Proxy ${proxyUrl} failed`);
-                    }).catch(error => {
-                        console.log(`Proxy failed:`, error.message);
-                        return null;
-                    })
-                );
-            }
-            
-            // 等待所有请求完成，取第一个成功的
-            const results = await Promise.all(requests);
-            
-            for (const result of results) {
-                if (result && result.rc === 0 && result.data && result.data.diff) {
+                }, 10000);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const result = await response.json();
+                if (result && result.data && result.data.diff) {
                     const realTimeData = {};
                     result.data.diff.forEach(item => {
                         realTimeData[item.f12] = {
@@ -682,15 +641,17 @@
                         };
                     });
                     console.log('Real-time data fetched successfully:', realTimeData);
-                    
+
                     // 缓存数据
                     realTimeDataCache.data[cacheKey] = realTimeData;
                     realTimeDataCache.timestamp = now;
-                    
+
                     return realTimeData;
                 }
+            } catch (error) {
+                console.log('Fetch failed:', error.message);
             }
-            
+
             console.log('All fetch methods failed, using empty data');
             return {};
         }
