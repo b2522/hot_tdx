@@ -35,7 +35,7 @@ function exportStockCodes() {
         if (row.style.display === 'none') {
             return;
         }
-        var codeCell = row.querySelector('td:nth-child(7)');
+        var codeCell = row.querySelector('td:nth-child(6)');
         if (!codeCell) {
             return;
         }
@@ -151,7 +151,7 @@ function filterByDate(dateValue) {
             tbody.innerHTML = '';
             
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" class="no-data">该日期暂无数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="no-data">该日期暂无数据</td></tr>';
                 return;
             }
             
@@ -166,13 +166,12 @@ function filterByDate(dateValue) {
                     var codeClass = stock.code_part.startsWith('3') ? 'orange-code' : '';
                     var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
                 row.innerHTML =
-                    '<td><a href="' + link + '" target="_blank" class="' + nameClass + '">' + stock.name + '</a></td>' +
-                    '<td><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
+                    '<td><a href="' + link + '" target="_blank" class="' + nameClass + '"><div class="sn-name">' + stock.name + '</div><div class="sn-code" style="font-size:11px;color:#999;">' + stock.code_part + '</div></a></td>' +
                     '<td class="price"></td>' +
                     '<td class="change-percentage"></td>' +
                     '<td class="amount"></td>' +
                     '<td class="value"></td>' +
-                    '<td style="display: none;" class="' + codeClass + '">' + stock.code_part + '</td>' +
+                    '<td style="display: none;" data-code="' + stock.code_part + '" class="' + codeClass + '">' + stock.code_part + '</td>' +
                     '<td style="display: none;">' + stock.market + '</td>' +
                     '<td>' + (stock.m_days_n_boards ? '<span class="days-boards-tag">' + stock.m_days_n_boards + '</span>' : stock.m_days_n_boards) + '</td>' +
                     '<td>' + (stock.description ? stock.description.substring(0, 100) + (stock.description.length > 100 ? '...' : '') : '') + '</td>' +
@@ -259,7 +258,7 @@ function clearSearch() {
 // 强制设置题材列宽度
 function forcePlateColumnWidth() {
     // 获取所有题材列的表头和单元格
-    var plateColumns = document.querySelectorAll('.plate-column, th:nth-child(11), td:nth-child(11), th:last-child, td:last-child');
+    var plateColumns = document.querySelectorAll('.plate-column, th:nth-child(10), td:nth-child(10), th:last-child, td:last-child');
     
     plateColumns.forEach(function(column) {
         // 强制设置宽度
@@ -272,7 +271,7 @@ function forcePlateColumnWidth() {
     });
     
     // 特别处理搜索框
-    var plateInput = document.querySelector('.plate-column .filter-input, th:nth-child(11) .filter-input');
+    var plateInput = document.querySelector('.plate-column .filter-input, th:nth-child(10) .filter-input');
     if (plateInput) {
         plateInput.style.width = '100%';
         plateInput.style.maxWidth = '60px';
@@ -1074,7 +1073,7 @@ function fetchRealTimeStockData() {
     
     Array.prototype.forEach.call(rows, function(row) {
         // 使用更具体的选择器来获取股票代码，避免获取到错误的数据
-        var codeElement = row.querySelector('td.orange-code, td:nth-child(7)'); // 代码列现在是第7列
+        var codeElement = row.querySelector('td.orange-code, td:nth-child(6)'); // 代码列现在是第7列
         if (codeElement) {
             var code = codeElement.textContent.trim();
             // 添加调试信息
@@ -1179,7 +1178,7 @@ function updateStockTable(data, rows, codeMap) {
         
         // 查找所有包含该股票代码的行
         Array.prototype.forEach.call(rows, function(row) {
-            var rowCodeElement = row.querySelector('td:nth-child(7)'); // 代码列现在是第7列
+            var rowCodeElement = row.querySelector('td:nth-child(6)'); // 代码列现在是第7列
             if (rowCodeElement) {
                 var rowCode = rowCodeElement.textContent.trim();
                 if (rowCode === code) {
@@ -1239,14 +1238,8 @@ function updateStockTable(data, rows, codeMap) {
                                 // 尝试将成交额转换为数字并格式化
                                 var amountNum = parseFloat(amount);
                                 if (!isNaN(amountNum) && amountNum >= 0) {
-                                    // 格式化成交额，超过1亿显示为亿，超过1万显示为万
-                                    if (amountNum >= 100000000) {
-                                        amountElement.textContent = (amountNum / 100000000).toFixed(2) + '亿';
-                                    } else if (amountNum >= 10000) {
-                                        amountElement.textContent = (amountNum / 10000).toFixed(2) + '万';
-                                    } else {
-                                        amountElement.textContent = amountNum.toFixed(2);
-                                    }
+                                    // 成交额统一以亿元表示
+                                    amountElement.textContent = (amountNum / 100000000).toFixed(2) + '亿';
                                 } else {
                                     console.warn(`股票 ${code} 成交额数据异常:`, amount);
                                     amountElement.textContent = '--';
@@ -1306,7 +1299,7 @@ function sortByDaysBoards() {
     var rows = Array.prototype.slice.call(tbody.getElementsByTagName('tr')).filter(function(row) {
         return !row.querySelector('td[colspan]');
     });
-    var header = document.querySelector('th.sortable:nth-child(9)');
+    var header = document.querySelector('th.sortable:nth-child(8)');
     
     // 解析几天几板中的数字
     function getBoardCount(text) {
@@ -1325,8 +1318,8 @@ function sortByDaysBoards() {
     
     // 排序
     rows.sort(function(a, b) {
-        var aCount = getBoardCount(a.cells[8].textContent);
-        var bCount = getBoardCount(b.cells[8].textContent);
+        var aCount = getBoardCount(a.cells[7].textContent);
+        var bCount = getBoardCount(b.cells[7].textContent);
         
         if (currentIsDesc) {
             return aCount - bCount; // 升序
@@ -1364,7 +1357,7 @@ function sortByChangePercentage() {
     var rows = Array.prototype.slice.call(tbody.getElementsByTagName('tr')).filter(function(row) {
         return !row.querySelector('td[colspan]');
     });
-    var header = document.querySelector('th.sortable:nth-child(4)');
+    var header = document.querySelector('th.sortable:nth-child(3)');
     
     // 解析涨跌幅百分比数值
     function getChangePercentage(element) {
@@ -1390,7 +1383,7 @@ function sortByChangePercentage() {
     // 排序前记录一些数据
     console.log('排序前的前5行数据:');
     for (var i = 0; i < Math.min(5, rows.length); i++) {
-        var cell = rows[i].cells[3];
+        var cell = rows[i].cells[2];
         var text = cell.textContent || '';
         console.log('行' + (i+1) + ': ' + text);
     }
@@ -1400,8 +1393,8 @@ function sortByChangePercentage() {
     
     // 排序
     rows.sort(function(a, b) {
-        var aChange = getChangePercentage(a.cells[3]); // 涨跌幅是第4列，索引为3
-        var bChange = getChangePercentage(b.cells[3]);
+        var aChange = getChangePercentage(a.cells[2]); // 涨跌幅是第4列，索引为3
+        var bChange = getChangePercentage(b.cells[2]);
         
         console.log('比较:', aChange, 'vs', bChange);
         
@@ -1415,7 +1408,7 @@ function sortByChangePercentage() {
     // 排序后记录一些数据
     console.log('排序后的前5行数据:');
     for (var i = 0; i < Math.min(5, rows.length); i++) {
-        var cell = rows[i].cells[3];
+        var cell = rows[i].cells[2];
         var text = cell.textContent || '';
         console.log('行' + (i+1) + ': ' + text);
     }
@@ -1448,7 +1441,7 @@ function sortByAmount() {
     var rows = Array.prototype.slice.call(tbody.getElementsByTagName('tr')).filter(function(row) {
         return !row.querySelector('td[colspan]');
     });
-    var header = document.querySelector('th.sortable:nth-child(6)'); // 成交额列现在是第6列
+    var header = document.querySelector('th.sortable:nth-child(5)'); // 成交额列现在是第6列
     
     // 解析成交额数值
     function getAmountValue(text) {
@@ -1466,7 +1459,7 @@ function sortByAmount() {
     // 排序前记录一些数据
     console.log('排序前的前5行数据:');
     for (var i = 0; i < Math.min(5, rows.length); i++) {
-        var cell = rows[i].cells[5]; // 成交额是第6列，索引为5
+        var cell = rows[i].cells[4]; // 成交额是第6列，索引为5
         var text = cell.textContent || '';
         console.log('行' + (i+1) + ': ' + text);
     }
@@ -1476,8 +1469,8 @@ function sortByAmount() {
     
     // 排序
     rows.sort(function(a, b) {
-        var aAmount = getAmountValue(a.cells[5].textContent); // 成交额是第6列，索引为5
-        var bAmount = getAmountValue(b.cells[5].textContent);
+        var aAmount = getAmountValue(a.cells[4].textContent); // 成交额是第6列，索引为5
+        var bAmount = getAmountValue(b.cells[4].textContent);
         
         console.log('比较:', aAmount, 'vs', bAmount);
         
@@ -1491,7 +1484,7 @@ function sortByAmount() {
     // 排序后记录一些数据
     console.log('排序后的前5行数据:');
     for (var i = 0; i < Math.min(5, rows.length); i++) {
-        var cell = rows[i].cells[5]; // 成交额是第6列，索引为5
+        var cell = rows[i].cells[4]; // 成交额是第6列，索引为5
         var text = cell.textContent || '';
         console.log('行' + (i+1) + ': ' + text);
     }
@@ -1537,8 +1530,8 @@ function filterByPlate(plateValue) {
     
     // 对每一行进行题材内容的匹配
     rows.forEach(row => {
-        // 选择题材列（第11列，索引10）
-        const plateElement = row.getElementsByTagName('td')[10];
+        // 题材列：优先按 class 查找，索引兜底（第10列，索引9）
+        const plateElement = row.querySelector('td.plate-column') || row.getElementsByTagName('td')[9];
         if (plateElement) {
             const plate = plateElement.textContent.trim();
             // 检查题材列是否包含搜索词
@@ -1580,7 +1573,7 @@ function updatePlateStats() {
         var plateCell = row.querySelector('td.plate-column');
         // 如果没有找到，再尝试通过索引查找（兼容旧结构）
         if (!plateCell) {
-            plateCell = row.cells[10];
+            plateCell = row.cells[9];
         }
         if (plateCell) {
             // 获取题材内容
@@ -1718,7 +1711,7 @@ function searchPlate() {
             tbody.innerHTML = '';
             
             if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="11" class="no-data">没有找到匹配的题材数据</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="no-data">没有找到匹配的题材数据</td></tr>';
                 return;
             }
             
@@ -1732,13 +1725,12 @@ function searchPlate() {
                 var codeClass = stock.code_part.startsWith('3') ? 'orange-code' : '';
                 var nameClass = stock.code_part.startsWith('688') ? 'stock-name-link blue-text' : (stock.code_part.startsWith('3') || stock.code_part.startsWith('68')) ? 'stock-name-link orange-text' : 'stock-name-link';
                 row.innerHTML =
-                    '<td class="' + nameClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.name + '</td>' +
-                    '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');"><div class="time-chart" data-code="' + stock.code_part + '"></div></td>' +
+                    '<td class="' + nameClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');"><div class="sn-name">' + stock.name + '</div><div class="sn-code" style="font-size:11px;color:#999;">' + stock.code_part + '</div></td>' +
                     '<td class="price" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
                     '<td class="change-percentage" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00%</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">0.00</td>' +
-                    '<td style="display: none;" class="' + codeClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.code_part + '</td>' +
+                    '<td style="display: none;" data-code="' + stock.code_part + '" class="' + codeClass + '" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.code_part + '</td>' +
                     '<td style="display: none;" onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + stock.market + '</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + (stock.m_days_n_boards ? '<span class="days-boards-tag">' + stock.m_days_n_boards + '</span>' : stock.m_days_n_boards) + '</td>' +
                     '<td onclick="event.stopPropagation(); linkToTongDaXin(\'' + stock.code_part + '\');">' + (stock.description ? stock.description.substring(0, 100) + (stock.description.length > 100 ? '...' : '') : '') + '</td>' +
@@ -1774,7 +1766,7 @@ function searchPlate() {
         .catch(function(error) {
             console.error('搜索题材数据失败:', error);
             const tbody = document.getElementById('stockTableBody');
-            tbody.innerHTML = '<tr><td colspan="11" class="no-data">搜索题材数据时发生错误</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="no-data">搜索题材数据时发生错误</td></tr>';
         });
 }
 

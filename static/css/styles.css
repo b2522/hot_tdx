@@ -137,7 +137,7 @@ body {
     background-color: var(--table-row-hover);
 }
 
-/* 调整列宽 */
+/* 调整列宽（10列：1名称 2价格 3涨幅 4成交额 5流通市值 6代码[隐] 7市场[隐] 8几天几板 9解读 10题材） */
 th:nth-child(1), td:nth-child(1) {
     width: 100px;
     white-space: nowrap;
@@ -147,9 +147,8 @@ th:nth-child(1), td:nth-child(1) {
 }
 
 th:nth-child(2), td:nth-child(2) {
-    width: 100px;
+    width: 70px;
     text-align: center;
-    padding: 0;
     white-space: nowrap;
 }
 
@@ -162,7 +161,7 @@ th:nth-child(3), td:nth-child(3) {
 }
 
 th:nth-child(4), td:nth-child(4) {
-    width: 70px;
+    width: 80px;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -170,44 +169,18 @@ th:nth-child(4), td:nth-child(4) {
     font-size: 14px;
 }
 
-/* 分时图容器样式 */
-.time-chart {
-    width: 100px;
-    height: 50px;
-    margin: 0 auto;
-    display: block;
-}
-
-/* 确保分时图列的单元格有足够的高度 */
-td:nth-child(2) {
-    height: 50px;
-    padding: 0;
-}
-
-th:nth-child(7), td:nth-child(7) {
+th:nth-child(5), td:nth-child(5) {
     width: 80px;
-    white-space: nowrap;
     text-align: center;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-size: 14px;
 }
 
-th:nth-child(8) {
-    text-align: center;
-    width: auto;
-}
-
-td:nth-child(8) {
-    white-space: normal;
-    word-wrap: break-word;
-    word-break: break-all;
-    text-align: left;
-    width: auto;
-}
-
-th:nth-child(9), td:nth-child(9) {
-    width: 90px;
-    min-width: 90px;
+th:nth-child(8), td:nth-child(8) {
+    width: 6em; /* 6个汉字宽度（列字号12px） */
+    min-width: 6em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -215,7 +188,8 @@ th:nth-child(9), td:nth-child(9) {
     text-align: center;
 }
 
-th:nth-child(10) {
+/* 解读列：宽度最大，允许换行 */
+th:nth-child(9) {
     width: auto;
     white-space: normal;
     word-wrap: break-word;
@@ -224,7 +198,7 @@ th:nth-child(10) {
     font-size: 14px;
 }
 
-td:nth-child(10) {
+td:nth-child(9) {
     width: auto;
     white-space: normal;
     word-wrap: break-word;
@@ -235,10 +209,8 @@ td:nth-child(10) {
 
 /* 最具体的选择器确保样式优先级 */
 #stockTableBody tr td:last-child,
-#stockTableBody tr td:nth-child(11),
 #stockTableBody tr td.plate-column,
 .table-container table thead tr th:last-child,
-.table-container table thead tr th:nth-child(11),
 .table-container table thead tr th.plate-column {
     width: 120px !important;
     min-width: 120px !important;
@@ -254,17 +226,17 @@ td:nth-child(10) {
 }
 
 /* 确保表格单元格内容格式正确 */
-/* 为大多数列设置省略号样式，但排除需要换行的列 */
-th:not(:nth-child(8)):not(:nth-child(9)):not(:nth-child(10)):not(:nth-child(11)), 
-td:not(:nth-child(8)):not(:nth-child(9)):not(:nth-child(10)):not(:nth-child(11)) {
+/* 为大多数列设置省略号样式，但排除需要换行的列（解读、题材） */
+th:not(:nth-child(9)):not(:nth-child(10)),
+td:not(:nth-child(9)):not(:nth-child(10)) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 /* 隐藏代码列和市场列 */
-th:nth-child(5), td:nth-child(5),
-th:nth-child(6), td:nth-child(6) {
+th:nth-child(6), td:nth-child(6),
+th:nth-child(7), td:nth-child(7) {
     display: none;
 }
 
@@ -352,14 +324,7 @@ th.sortable.sorted::after {
     font-size: 14px;
 }
 
-/* 调整日期选择器的宽度 */
-th:nth-child(10) .filter-input {
-    max-width: 80px;
-    font-size: 12px;
-}
-
-.table-container th.plate-column .filter-input,
-.table-container th:nth-child(11) .filter-input {
+.table-container th.plate-column .filter-input {
     max-width: 110px !important;
     font-size: 14px !important;
     padding: 5px !important;
