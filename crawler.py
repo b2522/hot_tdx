@@ -7,6 +7,9 @@ import sqlite3
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# 选股宝为国内API，禁用系统代理直连（代理会断开连接导致抓取失败）
+NO_PROXY = {"http": None, "https": None}
+
 # API基本URL
 BASE_URL = "https://flash-api.xuangubao.com.cn/api/surge_stock/stocks"
 
@@ -124,7 +127,7 @@ def crawl_stock_data(crawl_today_only=True, force_update=False, bypass_time_chec
             
             try:
                 # 发送API请求（使用模拟浏览器的请求头）
-                response = requests.get(url, headers=HEADERS)
+                response = requests.get(url, headers=HEADERS, proxies=NO_PROXY)
                 response.raise_for_status()  # 检查请求是否成功
                 
                 # 解析JSON数据

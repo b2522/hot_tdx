@@ -65,13 +65,12 @@
                                 <input 
                                     type="text" 
                                     id="searchInput" 
-                                    placeholder="股票名称" 
+                                    placeholder="名称/代码"
                                     class="search-input"
                                     oninput="showSuggestions(this.value)"
                                 >
                             </div>
                         </th>
-                        <th>分时图</th>
                         <th>价格</th>
                         <th class="sortable" onclick="sortByChangePercentage()">涨幅</th>
                         <th class="sortable" onclick="sortByAmount()">成交额</th>
@@ -89,13 +88,12 @@
                     {% if stocks %}
                         {% for stock in stocks %}
                             <tr onclick="linkToTongDaXin('{{ stock.code_part }}')" style="cursor: pointer;">
-                                <td class="stock-name-link{% if stock.code_part.startswith('688') %} blue-text{% elif stock.code_part.startswith('3') or stock.code_part.startswith('68') %} orange-text{% endif %}">{{ stock.name }}</td>
-                                <td><div class="time-chart" data-code="{{ stock.code_part }}"></div></td>
+                                <td class="stock-name-link{% if stock.code_part.startswith('688') %} blue-text{% elif stock.code_part.startswith('3') or stock.code_part.startswith('68') %} orange-text{% endif %}"><div class="sn-name">{{ stock.name }}</div><div class="sn-code" style="font-size:11px;color:#999;">{{ stock.code_part }}</div></td>
                                 <td class="price"></td>
                                 <td class="change-percentage"></td>
                                 <td class="amount"></td>
                                 <td class="value"></td>
-                                <td style="display: none;" class="{% if stock.code_part.startswith('3') %}orange-code{% endif %}">{{ stock.code_part }}</td>
+                                <td style="display: none;" data-code="{{ stock.code_part }}" class="{% if stock.code_part.startswith('3') %}orange-code{% endif %}">{{ stock.code_part }}</td>
                                 <td style="display: none;">{{ stock.market }}</td>
                                 <td>{% if stock.m_days_n_boards %}
                                     <span class="days-boards-tag">{{ stock.m_days_n_boards }}</span>
@@ -106,7 +104,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="11" class="no-data">暂无股票数据，请点击"抓取股票数据"按钮获取数据</td>
+                            <td colspan="10" class="no-data">暂无股票数据，请点击"抓取股票数据"按钮获取数据</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -210,5 +208,7 @@
     <button id="backToTopBtn" class="back-to-top" title="返回顶部">
     </button>
     
+    <!-- 股票名称悬停弹窗：日K线(MACD) + 分时图 -->
+    <script src="/static/js/chart_popup.js"></script>
 </body>
 </html>

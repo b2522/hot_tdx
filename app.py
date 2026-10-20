@@ -17,6 +17,10 @@ app = Flask(__name__)
 # 缓存字典，用于存储临时数据
 cache = {}
 
+# 国内财经API（雪球/东财/选股宝）直连，禁用系统代理：
+# 环境代理（v2rayN/沙箱代理）会丢弃或断开对这些域名的连接，导致实时数据时有时无
+NO_PROXY = {"http": None, "https": None}
+
 def get_cache(key):
     """获取缓存数据"""
     if key in cache:
@@ -197,10 +201,10 @@ def stock_detail(stock_code):
     history_data = db.get_stock_history_data(stock_code)
     return render_template('stock_detail.html', stock_code=stock_code, history_data=history_data)
 
-@app.route('/zqtc_tdx')
-def zqtc_tdx():
+@app.route('/zqtc')
+def zqtc():
     # 显示最强题材解读页面
-    return render_template('zqtc_tdx.html')
+    return render_template('zqtc.html')
 
 @app.route('/api/realtime-stock-data')
 def get_realtime_stock_data():
@@ -220,7 +224,7 @@ def get_realtime_stock_data():
         }
         
         # 发送请求获取数据
-        response = requests.get(api_url, headers=headers)
+        response = requests.get(api_url, headers=headers, proxies=NO_PROXY)
         response.raise_for_status()  # 抛出HTTP错误
         
         # 返回获取到的数据并设置缓存头
@@ -269,34 +273,49 @@ def get_time_sharing_data():
         return jsonify({'error': '缺少股票代码参数'}), 400
 
     try:
-        # 根据股票代码生成secid参数
+        # 根据股票代码生成腾讯行情代码（已由东财切换为腾讯数据源）
         if code[0] == '6':
-            market = '1'  # 沪市
-        elif code[0] == '0' or code[0] == '3':
-            market = '0'  # 深市
+            tencent_code = 'sh' + code
+        elif code[0] in ('0', '3'):
+            tencent_code = 'sz' + code
+        elif code[0] in ('8', '4') or code.startswith('92'):
+            tencent_code = 'bj' + code
         else:
             return jsonify({'error': f'不支持的股票代码前缀: {code[0]}'}), 400
 
-        secid = f"{market}.{code}"
+        api_url = f'https://web.ifzq.gtimg.cn/appstock/app/minute/query?code={tencent_code}'
+        logging.info(f"请求分时数据API: code={code}, url={api_url}")
 
-        # 构建API请求URL
-        api_url = f'https://push2.eastmoney.com/api/qt/stock/trends2/get?fields1=f1,f2,f8,f10&fields2=f51,f53,f56,f58&secid={secid}&ndays=1&iscr=0&iscca=0'
-
-        logging.info(f"请求分时数据API: code={code}, secid={secid}, url={api_url}")
-
-        # 设置请求头，模拟浏览器请求
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Referer': 'https://quote.eastmoney.com/'
-        }
-
-        # 发送请求获取数据
-        response = requests.get(api_url, headers=headers)
-        response.raise_for_status()  # 抛出HTTP错误
-
-        # 返回获取到的数据并设置缓存头
+        response = requests.get(api_url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10, proxies=NO_PROXY)
+        response.raise_for_status()
         result = response.json()
-        api_response = make_response(jsonify(result))
+
+        stock_node = result.get('data', {}).get(tencent_code, {})
+        minute_node = stock_node.get('data', {})
+        raw_minutes = minute_node.get('data') or []
+        qt_fields = stock_node.get('qt', {}).get(tencent_code) or []
+        pre_close = float(qt_fields[4]) if len(qt_fields) > 4 else 0
+        date_str = minute_node.get('date', '')  # 如 20261020
+        date_fmt = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:8]}" if len(date_str) == 8 else ''
+
+        # 转换为与东财 trends2 相同的结构：["时间,价格,成交量,成交额", ...]，前端无需改动
+        trends = []
+        for line in raw_minutes:
+            parts = str(line).split()
+            if len(parts) < 3:
+                continue
+            hhmm = parts[0]
+            time_str = f"{date_fmt} {hhmm[:2]}:{hhmm[2:]}" if date_fmt else f"{hhmm[:2]}:{hhmm[2:]}"
+            trends.append(','.join([time_str] + parts[1:4]))
+
+        api_response = make_response(jsonify({
+            'data': {
+                'code': code,
+                'name': qt_fields[1] if len(qt_fields) > 1 else '',
+                'preClose': pre_close,
+                'trends': trends,
+            }
+        }))
         api_response.headers['Cache-Control'] = 'public, max-age=60'  # 缓存1分钟
         return api_response
     except requests.exceptions.RequestException as e:
@@ -376,70 +395,81 @@ try:
 except Exception as e:
     logging.error(f"启动定时任务调度器失败: {e}")
 
+def _fetch_quote_from_tencent(secids):
+    """行情数据源：腾讯 qt.gtimg.cn（免鉴权、稳定，已替代东财）。
+    转换为与东财 ulist 相同的响应结构，前端无需改动。
+    字段映射（~分隔，0起始）：[1]=名称 [2]=代码 [3]=最新价 [32]=涨跌幅% [37]=成交额(万元)"""
+    codes = []
+    for sid in secids.split(','):
+        try:
+            prefix, num = sid.strip().split('.', 1)
+        except ValueError:
+            continue
+        if prefix == '1':
+            codes.append('sh' + num)
+        elif num.startswith(('8', '4', '92')):
+            codes.append('bj' + num)
+        else:
+            codes.append('sz' + num)
+    if not codes:
+        return None
+    try:
+        url = "https://qt.gtimg.cn/q=" + ",".join(codes)
+        r = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=10, proxies=NO_PROXY)
+        r.encoding = 'gbk'
+        diff = []
+        for line in r.text.split(';'):
+            line = line.strip()
+            if '="' not in line:
+                continue
+            fields = line.split('="', 1)[1].rstrip('"').split('~')
+            if len(fields) < 45:
+                continue
+            try:
+                diff.append({
+                    'f2': float(fields[3]),
+                    'f3': float(fields[32]),
+                    'f6': float(fields[37]) * 10000,
+                    'f12': fields[2],
+                    'f14': fields[1],
+                })
+            except (ValueError, IndexError):
+                continue
+        if diff:
+            logging.info(f"腾讯备用行情源返回 {len(diff)} 条数据")
+            return {'data': {'diff': diff, 'total': len(diff)}}
+    except requests.RequestException as e:
+        logging.warning(f"腾讯备用行情源请求失败: {str(e)}")
+    return None
+
 @app.route('/api/proxy-eastmoney-stock-data')
 def proxy_eastmoney_stock_data():
-    """代理东方财富网股票数据API，解决跨域问题"""
+    """股票实时行情接口：数据源为腾讯 qt.gtimg.cn，返回结构与原东财 ulist 一致，前端无需改动"""
     try:
         # 获取查询参数
         secids = request.args.get('secids')
-        
+
         if not secids:
             return jsonify({'error': '缺少必要参数'}), 400
-            
+
         # 日志记录请求的股票ID
         logging.info(f"请求的股票ID: {secids}")
-        
-        # 设置请求头，模拟浏览器行为
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
-            'Referer': 'https://data.eastmoney.com/',
-            'Accept': 'application/json, text/javascript, */*; q=0.01'
-        }
-        
-        # 使用用户指定的API URL
-        api_url = f"https://push2.eastmoney.com/api/qt/ulist.np/get"
-        api_url += f"?fields=f2,f3,f6,f12,f14"  # 添加f6字段以获取成交额
-        api_url += f"&fltt=2"
-        api_url += f"&secids={secids}"
-        
-        logging.info(f"构建的API URL: {api_url}")
-        
-        # 请求重试机制
+
+        # 腾讯行情源（带重试）
         max_retries = 3
-        retry_count = 0
-        success = False
-        response_data = None
-        
-        while retry_count < max_retries and not success:
-            try:
-                # 发送请求
-                response = requests.get(api_url, headers=headers, timeout=10)
-                response.raise_for_status()
-                
-                # 处理响应
-                response_data = response.json()
-                
-                # 日志记录返回数据
-                logging.info(f"API返回数据: {response_data}")
-                
-                # 验证数据格式
-                if response_data and 'rc' in response_data and response_data['rc'] == 0 and 'data' in response_data:
-                    success = True
-                    logging.info(f"成功获取股票数据，共 {len(response_data['data'].get('diff', []))} 条")
-                else:
-                    logging.warning(f"返回数据格式不正确或请求失败: {response_data}")
-                    retry_count += 1
-                    time.sleep(1)
-                    
-            except requests.RequestException as e:
-                logging.warning(f"请求失败 (尝试 {retry_count+1}/{max_retries}): {str(e)}")
-                retry_count += 1
+        quote_data = None
+        for attempt in range(max_retries):
+            quote_data = _fetch_quote_from_tencent(secids)
+            if quote_data:
+                break
+            if attempt < max_retries - 1:
                 time.sleep(1)
-        
+                logging.warning(f"腾讯行情源第 {attempt + 1} 次尝试失败，重试中...")
+
         # 准备响应
-        if success and response_data:
+        if quote_data:
             # 创建响应对象，设置CORS头
-            response = make_response(jsonify(response_data))
+            response = make_response(jsonify(quote_data))
             response.headers['Access-Control-Allow-Origin'] = '*'
             response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
             response.headers['Access-Control-Max-Age'] = '30'
@@ -447,11 +477,11 @@ def proxy_eastmoney_stock_data():
         else:
             # 失败时返回错误响应
             return jsonify({'error': '获取数据失败，请稍后重试'}), 503
-            
+
     except Exception as e:
         logging.error(f"处理请求时发生错误: {str(e)}")
         return jsonify({'error': '服务器内部错误'}), 500
-        
+
 @app.route('/api/proxy-eastmoney-kline-data', methods=['GET'])
 def proxy_eastmoney_kline_data():
     """代理东方财富网K线图数据API，解决跨域问题"""
@@ -481,7 +511,7 @@ def proxy_eastmoney_kline_data():
         }
         
         # 发送请求到东方财富网API
-        response = requests.get(api_url, headers=headers, timeout=10)
+        response = requests.get(api_url, headers=headers, timeout=10, proxies=NO_PROXY)
         response.raise_for_status()
         
         # 获取返回的数据
@@ -723,26 +753,10 @@ def api_follow_realtime_prices():
             secids.append(f"{market}.{code}")
         
         secids_str = ','.join(secids)
-        
-        # 构建API URL
-        api_url = f"https://push2.eastmoney.com/api/qt/ulist.np/get"
-        api_url += f"?fields=f2,f3,f6,f12,f14"
-        api_url += f"&fltt=2"
-        api_url += f"&secids={secids_str}"
-        
-        # 设置请求头
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Referer': 'https://data.eastmoney.com/',
-            'Accept': 'application/json, text/javascript, */*; q=0.01'
-        }
-        
-        # 发送请求
-        response = requests.get(api_url, headers=headers, timeout=10)
-        response.raise_for_status()
-        
-        result = response.json()
-        
+
+        # 腾讯行情源（返回结构与原东财 ulist 一致，已替代东财）
+        result = _fetch_quote_from_tencent(secids_str)
+
         # 解析返回的数据并更新数据库
         if result and 'data' in result and 'diff' in result['data']:
             stock_updates = []

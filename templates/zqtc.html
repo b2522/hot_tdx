@@ -5,7 +5,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>涨停板题材解读</title>
+    <title>热门题材解读</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PZNS6NV3YB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-PZNS6NV3YB');
+    </script>
     <style>
         :root {
             --bg-color: #1e1e1e;
@@ -114,7 +123,7 @@
             text-align: center;
             margin: 10px 0 3px 0;
             color: white;
-            font-size: 10px;
+            font-size: 12px;
         }
         .left-table { 
             width: 160px;
@@ -274,22 +283,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>最强题材解读</h1>
-        
-        <div class="header-container">
+         <div class="header-container">
             <div class="date-selector">
-                <input type="date" id="datePicker" placeholder="年/月/日" onchange="onDateChange()">
+                <span class="market-label" style="font-size: 14px;">
+                    <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>
+                </span>
+                <span style="color: var(--text-color); font-size: 14px;"> | </span>
+                <input type="date" id="datePicker" placeholder="选择日期" onchange="onDateChange()" class="filter-input">
+                <button class="refresh-btn" onclick="location.reload()">刷新</button>
+                <span style="color: var(--text-color); font-size: 14px;"> | </span>
+                <a href="javascript:void(0)" onclick="changeDate(-1)" style="color: white !important; text-decoration: none !important; font-size: 14px;">前一天</a>
+                <span style="color: var(--text-color); font-size: 14px;"> | </span>
+                <a href="javascript:void(0)" onclick="changeDate(1)" style="color: white !important; text-decoration: none !important; font-size: 14px;">后一天</a>
+                <div style="margin-left: auto; color: orange !important; font-size: 14px;">
+                    公众号：别浪 好好学习
+                    <a href="https://trend.luckin.dpdns.org/" style="margin-left: 20px; color: #4d90fe; text-decoration: none;">查看题材趋势</a>
+                </div>
             </div>
-            <div style="font-size: 14px; color: #cccccc; margin-left: 10px;">
-               <span style="color: orange;">橙色字体【创业板】</span> <span style="color: rgba(60, 127, 250, 0.781);">蓝色字体【科创板】</span>                
-            </div>
-            <div class="font-size-control">
-                <button class="font-size-btn" onclick="changeFontSize(-1)">--</button>
-                <button class="font-size-btn" onclick="changeFontSize(0)">A</button>
-                <button class="font-size-btn" onclick="changeFontSize(1)">++</button>
-                <span class="font-size-display" id="fontSizeDisplay">14px</span>
-            </div>
-            <div class="concept-title" id="detailTitle">请选择题材</div>
         </div>
         
         <div class="content">
@@ -314,7 +324,7 @@
                     <table class="right-table" id="detailTable">
                         <thead>
                             <tr>
-                                <th class="name-column">股票名称</th>
+                                <th class="name-column">股票名称/代码</th>
                                 <th class="boards-column sortable" onclick="sortByBoards()">几天几板<span id="boardsSortIndicator" class="sort-indicator"></span></th>
                                 <th class="price-column">现价</th>
                                 <th class="change-column sortable" onclick="sortByChange()">涨幅<span id="changeSortIndicator" class="sort-indicator"></span></th>
@@ -333,7 +343,7 @@
         </div>
         
         <div class="footer">
-            【公众号：别浪 好好学习】 生成时间: <span id="generateTime"></span>
+            生成时间: <span id="generateTime"></span>
         </div>
     </div>
     
@@ -449,6 +459,31 @@
             return true;
         }
         
+        function changeDate(days) {
+            const datePicker = document.getElementById('datePicker');
+            const currentDate = datePicker.value;
+            
+            if (!currentDate) {
+                // 如果没有选择日期，使用今天
+                const today = new Date();
+                const newDate = new Date(today);
+                newDate.setDate(today.getDate() + days);
+                
+                const formattedDate = newDate.toISOString().split('T')[0];
+                datePicker.value = formattedDate;
+                onDateChange();
+            } else {
+                // 调整当前选择的日期
+                const selectedDate = new Date(currentDate);
+                const newDate = new Date(selectedDate);
+                newDate.setDate(selectedDate.getDate() + days);
+                
+                const formattedDate = newDate.toISOString().split('T')[0];
+                datePicker.value = formattedDate;
+                onDateChange();
+            }
+        }
+        
         function getSelectedDate() {
             const datePicker = document.getElementById('datePicker');
             const dateValue = datePicker.value;
@@ -550,43 +585,112 @@
             }
         }
         
+        // 缓存对象，存储实时数据
+        const realTimeDataCache = {
+            data: {},
+            timestamp: 0,
+            expiry: 30000 // 缓存过期时间：30秒
+        };
+        
+        // 带超时的fetch函数
+        function fetchWithTimeout(url, options = {}, timeout = 5000) {
+            return Promise.race([
+                fetch(url, options),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timeout')), timeout)
+                )
+            ]);
+        }
+        
         async function fetchRealTimeData(codes) {
             if (!codes || codes.length === 0) return {};
             
             const secIds = codes.map(code => getSecId(code)).join(',');
-            // 使用后端代理API解决CORS跨域问题
-            const API_URL = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
-            console.log('Fetching real-time data from:', API_URL);
+            const cacheKey = secIds;
             
-            try {
-                const response = await fetch(API_URL, {
+            // 检查缓存
+            const now = Date.now();
+            if (realTimeDataCache.data[cacheKey] && (now - realTimeDataCache.timestamp) < realTimeDataCache.expiry) {
+                console.log('Using cached real-time data');
+                return realTimeDataCache.data[cacheKey];
+            }
+            
+            const originalUrl = `https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f2,f3,f6,f12,f14&fltt=2&secids=${secIds}`;
+            console.log('Fetching real-time data from:', originalUrl);
+            
+            const corsProxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://cors-anywhere.herokuapp.com/',
+                'https://thingproxy.freeboard.io/fetch/'
+            ];
+            
+            // 构建所有请求
+            const requests = [];
+            
+            // 直接请求
+            requests.push(
+                fetchWithTimeout(originalUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json, text/plain, */*',
                     }
-                });
-                const data = await response.json();
-                
-                console.log('Real-time data response:', data);
-                
-                if (data.rc === 0 && data.data && data.data.diff) {
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Direct fetch failed');
+                }).catch(error => {
+                    console.log('Direct fetch failed:', error.message);
+                    return null;
+                })
+            );
+            
+            // 并行请求所有代理
+            for (const proxyUrl of corsProxies) {
+                const proxiedUrl = proxyUrl + encodeURIComponent(originalUrl);
+                requests.push(
+                    fetchWithTimeout(proxiedUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json, text/plain, */*',
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error(`Proxy ${proxyUrl} failed`);
+                    }).catch(error => {
+                        console.log(`Proxy failed:`, error.message);
+                        return null;
+                    })
+                );
+            }
+            
+            // 等待所有请求完成，取第一个成功的
+            const results = await Promise.all(requests);
+            
+            for (const result of results) {
+                if (result && result.rc === 0 && result.data && result.data.diff) {
                     const realTimeData = {};
-                    data.data.diff.forEach(item => {
+                    result.data.diff.forEach(item => {
                         realTimeData[item.f12] = {
                             price: item.f2,
                             change: item.f3,
                             amount: item.f6
                         };
                     });
-                    console.log('Parsed real-time data:', realTimeData);
+                    console.log('Real-time data fetched successfully:', realTimeData);
+                    
+                    // 缓存数据
+                    realTimeDataCache.data[cacheKey] = realTimeData;
+                    realTimeDataCache.timestamp = now;
+                    
                     return realTimeData;
-                } else {
-                    console.log('Invalid response format:', data);
                 }
-            } catch (error) {
-                console.error('Error fetching real-time data:', error);
             }
             
+            console.log('All fetch methods failed, using empty data');
             return {};
         }
         
@@ -611,7 +715,7 @@
             const detailBody = document.getElementById('detailBody');
             
             conceptBody.innerHTML = '<tr><td colspan="3" class="loading">加载中...</td></tr>';
-            detailBody.innerHTML = '<tr><td colspan="7" class="loading">请选择题材查看详情</td></tr>';
+            detailBody.innerHTML = '<tr><td colspan="8" class="loading">请选择题材查看详情</td></tr>';
             
             try {
                 const response = await fetch(API_URL);
@@ -708,7 +812,6 @@
                     this.classList.add('selected-row');
                     selectedRow = this;
                     
-                    document.getElementById('detailTitle').textContent = conceptName + ' 相关股票';
                     currentSortField = null;
                     sortDirection = 'desc';
                     updateSortIndicators();
@@ -724,12 +827,8 @@
         
         async function renderStocks(stocks) {
             const detailBody = document.getElementById('detailBody');
-            detailBody.innerHTML = '<tr><td colspan="8" class="loading">加载实时数据中...</td></tr>';
             
-            const codes = stocks.map(stock => stock.code);
-            console.log('Stocks to fetch:', codes);
-            const realTimeData = await fetchRealTimeData(codes);
-            
+            // 立即显示基础数据，不等待实时数据
             detailBody.innerHTML = '';
             
             stocks.forEach(stock => {
@@ -739,7 +838,17 @@
                 const cleanCode = stock.code.includes('.') ? stock.code.split('.')[0] : stock.code;
                 
                 const nameCell = row.insertCell(0);
-                nameCell.textContent = stock.name;
+                nameCell.className = 'stock-name-cell';
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'sn-name';
+                nameDiv.textContent = stock.name;
+                const codeDiv = document.createElement('div');
+                codeDiv.className = 'sn-code';
+                codeDiv.style.fontSize = '11px';
+                codeDiv.style.color = '#888';
+                codeDiv.textContent = cleanCode;
+                nameCell.appendChild(nameDiv);
+                nameCell.appendChild(codeDiv);
                 
                 if (cleanCode.startsWith('3')) {
                     nameCell.style.color = '#ff9933';
@@ -755,20 +864,13 @@
                 }
                 
                 const priceCell = row.insertCell(2);
+                priceCell.className = 'stock-price-cell';
                 const changeCell = row.insertCell(3);
-                if (realTimeData[cleanCode]) {
-                    const rtData = realTimeData[cleanCode];
-                    priceCell.textContent = rtData.price.toFixed(2);
-                    changeCell.textContent = formatChangeFromAPI(rtData.change);
-                    
-                    const isPositive = rtData.change > 0;
-                    priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                    changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
-                } else {
-                    priceCell.textContent = stock.price.toFixed(2);
-                    changeCell.textContent = formatChange(stock.change);
-                    changeCell.style.color = stock.change > 0 ? '#ff4d4d' : '#4CAF50';
-                }
+                changeCell.className = 'stock-change-cell';
+                // 先显示本地数据
+                priceCell.textContent = stock.price.toFixed(2);
+                changeCell.textContent = formatChange(stock.change);
+                changeCell.style.color = stock.change > 0 ? '#ff4d4d' : '#4CAF50';
                 
                 const timeCell = row.insertCell(4);
                 if (stock.enterTime) {
@@ -781,11 +883,7 @@
                 }
                 
                 const amountCell = row.insertCell(5);
-                if (realTimeData[cleanCode] && realTimeData[cleanCode].amount) {
-                    amountCell.textContent = formatAmount(realTimeData[cleanCode].amount);
-                } else {
-                    amountCell.textContent = '-';
-                }
+                amountCell.textContent = '-';
                 
                 const valueCell = row.insertCell(6);
                 valueCell.textContent = formatValue(stock.value);
@@ -800,6 +898,41 @@
                     linkToTongDaXin(stock.code);
                 });
             });
+            
+            // 异步加载实时数据并更新
+            const codes = stocks.map(stock => stock.code);
+            console.log('Stocks to fetch:', codes);
+            
+            try {
+                const realTimeData = await fetchRealTimeData(codes);
+                
+                // 更新实时数据
+                stocks.forEach(stock => {
+                    const cleanCode = stock.code.includes('.') ? stock.code.split('.')[0] : stock.code;
+                    const row = detailBody.querySelector(`tr[data-code="${stock.code}"]`);
+                    
+                    if (row && realTimeData[cleanCode]) {
+                        const rtData = realTimeData[cleanCode];
+                        const priceCell = row.cells[2];
+                        const changeCell = row.cells[3];
+                        const amountCell = row.cells[5];
+                        
+                        priceCell.textContent = rtData.price.toFixed(2);
+                        changeCell.textContent = formatChangeFromAPI(rtData.change);
+                        
+                        const isPositive = rtData.change > 0;
+                        priceCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
+                        changeCell.style.color = isPositive ? '#ff4d4d' : '#4CAF50';
+                        
+                        if (rtData.amount) {
+                            amountCell.textContent = formatAmount(rtData.amount);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching real-time data:', error);
+                // 出错时不影响基础数据显示
+            }
         }
         
         async function updateRealTimeData() {
@@ -843,12 +976,7 @@
                     
                     console.log(`Updated with real-time data: price=${rtData.price}, change=${rtData.change}`);
                 } else {
-                    const currentPrice = parseFloat(priceCell.textContent);
-                    const currentChange = parseFloat(changeCell.textContent);
-                    priceCell.textContent = currentPrice.toFixed(2);
-                    changeCell.textContent = formatChange(currentChange);
-                    changeCell.style.color = currentChange > 0 ? '#ff4d4d' : '#4CAF50';
-                    
+                    // 没有实时数据时，保持原有显示不变
                     console.log(`No real-time data, keeping existing values`);
                 }
                 
@@ -991,5 +1119,10 @@
             startAutoRefresh();
         };
     </script>
+
+    <!-- 股票名称悬停弹窗：日K线(MACD) + 分时图 -->
+    <script src="/static/js/chart_popup.js"></script>
 </body>
 </html>
+
+
